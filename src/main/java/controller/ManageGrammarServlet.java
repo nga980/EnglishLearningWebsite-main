@@ -52,6 +52,7 @@ public class ManageGrammarServlet extends HttpServlet {
         request.setAttribute("grammarTopicList", grammarTopicList);
         request.setAttribute("currentPage", currentPage);
         request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalTopics", totalTopics);
 
         request.getRequestDispatcher("/admin/manageGrammar.jsp").forward(request, response);
     }

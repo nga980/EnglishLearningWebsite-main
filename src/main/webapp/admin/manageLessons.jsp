@@ -418,40 +418,7 @@
 
     <div class="container-fluid">
         <div class="row">
-            <nav class="col-md-2 d-none d-md-block admin-sidebar">
-                <div class="sidebar-sticky pt-3">
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link admin-nav-link" href="${pageContext.request.contextPath}/admin/dashboard">
-                                <span data-feather="home"></span> Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link admin-nav-link active" href="${pageContext.request.contextPath}/admin/manage-lessons">
-                                <span data-feather="file-text"></span> Quản Lý Bài Học <span class="sr-only">(current)</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link admin-nav-link" href="${pageContext.request.contextPath}/admin/manage-vocabulary">
-                                <span data-feather="book-open"></span> Quản Lý Từ Vựng
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link admin-nav-link" href="${pageContext.request.contextPath}/admin/manage-grammar">
-                                <span data-feather="award"></span> Quản Lý Ngữ Pháp
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link admin-nav-link" href="#">
-                                <span data-feather="users"></span> Quản Lý Người Dùng
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
-
-            <main role="main" class="col-md-10 ml-sm-auto admin-main-content">
-                <!-- Header Card -->
+              <main role="main" class="col-md-10 ml-sm-auto admin-main-content">
                 <div class="header-card">
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
                         <div>
@@ -467,23 +434,23 @@
                     </div>
                 </div>
 
-                <!-- Statistics Cards -->
                 <div class="lesson-stats d-none d-md-flex">
                     <div class="stat-card">
+                        <%-- Sử dụng biến 'totalLessons' đã được gửi từ Servlet --%>
+                        <div class="stat-number">${totalLessons}</div>
+                        <div class="stat-label">Tổng Số Bài Học</div>
+                    </div>
+                    <div class="stat-card">
+                        <%-- Hiển thị trang hiện tại / tổng số trang --%>
+                        <div class="stat-number">${currentPage} / ${totalPages > 0 ? totalPages : 1}</div>
+                        <div class="stat-label">Trang Hiện Tại</div>
+                    </div>
+                    <div class="stat-card">
+                        <%-- Hiển thị số bài học trên trang này --%>
                         <div class="stat-number">${lessonList.size()}</div>
-                        <div class="stat-label">Tổng số bài học</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">${currentPage}</div>
-                        <div class="stat-label">Trang hiện tại</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">${totalPages}</div>
-                        <div class="stat-label">Tổng số trang</div>
+                        <div class="stat-label">Bài Học Đang Hiển Thị</div>
                     </div>
                 </div>
-
-                <!-- Search & Filter -->
                 <div class="search-filter">
                     <div class="row filter-row">
                         <div class="col-lg-8 col-md-8 col-sm-12 filter-col">
@@ -507,7 +474,6 @@
                     </div>
                 </div>
 
-                <!-- Alerts -->
                 <c:if test="${not empty sessionScope.successMessage}">
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                         <i class="fas fa-check-circle mr-2"></i>
@@ -530,13 +496,11 @@
                     <% session.removeAttribute("errorMessage"); %>
                 </c:if>
 
-                <!-- Loading Spinner -->
                 <div class="loading-spinner">
                     <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
                     <p class="mt-2">Đang tải dữ liệu...</p>
                 </div>
 
-                <!-- Table Card -->
                 <div class="table-card">
                     <div class="table-header">
                         <h5 class="mb-0"><i class="fas fa-list mr-2"></i>Danh Sách Bài Học</h5>
@@ -606,7 +570,6 @@
                     </div>
                 </div>
 
-                <!-- Pagination -->
                 <c:if test="${totalPages > 1}">
                     <nav aria-label="Phân trang">
                         <ul class="pagination justify-content-center">
@@ -633,7 +596,6 @@
         </div>
     </div>
 
-    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -735,12 +697,6 @@
                     scrollTop: 0
                 }, 300);
             });
-            
-            // Count lessons and update stats
-            var totalLessons = $('.lesson-row').length;
-            if (totalLessons > 0) {
-                $('.stat-number').first().text(totalLessons);
-            }
         });
         
         // Add some interactive animations

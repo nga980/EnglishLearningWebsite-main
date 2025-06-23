@@ -4,7 +4,8 @@ package controller;
 import dao.LessonDAO;
 import dao.UserDAO;
 import dao.VocabularyDAO;
-
+import dao.GrammarTopicDAO; 
+import com.google.gson.Gson;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -23,6 +24,7 @@ public class AdminDashboardServlet extends HttpServlet {
     private LessonDAO lessonDAO;
     private VocabularyDAO vocabularyDAO;
     private UserDAO userDAO;
+    private GrammarTopicDAO grammarTopicDAO; // <-- THÊM KHAI BÁO NÀY
 
     @Override
     public void init() {
@@ -30,6 +32,7 @@ public class AdminDashboardServlet extends HttpServlet {
         lessonDAO = new LessonDAO();
         vocabularyDAO = new VocabularyDAO();
         userDAO = new UserDAO();
+        grammarTopicDAO = new GrammarTopicDAO(); // <-- THÊM KHỞI TẠO NÀY
     }
 
     @Override
@@ -42,15 +45,17 @@ public class AdminDashboardServlet extends HttpServlet {
         // Gán thông tin người dùng để hiển thị trên giao diện (giữ nguyên)
         request.setAttribute("loggedInUser", request.getSession().getAttribute("loggedInUser"));
 
-        // THAY THẾ DỮ LIỆU GIẢ BẰNG DỮ LIỆU THẬT TỪ DAO
+        // Lấy dữ liệu thống kê từ các DAO
         int totalLessons = lessonDAO.countTotalLessons();
         int totalVocabulary = vocabularyDAO.countTotalVocabulary();
         int totalUsers = userDAO.countTotalUsers();
+        int totalGrammarTopics = grammarTopicDAO.countTotalGrammarTopics(); // <-- THÊM DÒNG NÀY
 
-        // Gán các thống kê thật vào request
+        // Gán các thống kê vào request để gửi sang JSP
         request.setAttribute("totalLessons", totalLessons);
         request.setAttribute("totalVocabulary", totalVocabulary);
         request.setAttribute("totalUsers", totalUsers);
+        request.setAttribute("totalGrammarTopics", totalGrammarTopics); // <-- THÊM DÒNG NÀY
 
         request.getRequestDispatcher("/admin/dashboard.jsp").forward(request, response);
     }

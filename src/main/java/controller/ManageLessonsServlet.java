@@ -27,22 +27,19 @@ public class ManageLessonsServlet extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         request.setCharacterEncoding("UTF-8");
 
-        // Lấy số trang hiện tại từ request parameter. Mặc định là trang 1.
         String pageStr = request.getParameter("page");
         int currentPage = 1;
         if (pageStr != null && !pageStr.isEmpty()) {
             try {
                 currentPage = Integer.parseInt(pageStr);
             } catch (NumberFormatException e) {
-                currentPage = 1; // Nếu param không hợp lệ, quay về trang 1
+                currentPage = 1; 
             }
         }
 
-        // Lấy tổng số bài học để tính tổng số trang
         int totalLessons = lessonDAO.countTotalLessons();
         int totalPages = (int) Math.ceil((double) totalLessons / PAGE_SIZE);
 
-        // Đảm bảo currentPage không vượt quá tổng số trang
         if (currentPage > totalPages && totalPages > 0) {
             currentPage = totalPages;
         }
@@ -50,13 +47,16 @@ public class ManageLessonsServlet extends HttpServlet {
             currentPage = 1;
         }
         
-        // Lấy danh sách bài học cho trang hiện tại
         List<Lesson> lessonList = lessonDAO.getLessonsByPage(currentPage, PAGE_SIZE);
 
         // Đặt các thuộc tính vào request để JSP có thể sử dụng
         request.setAttribute("lessonList", lessonList);
         request.setAttribute("currentPage", currentPage);
         request.setAttribute("totalPages", totalPages);
+        
+        // ================== DÒNG CẦN THÊM VÀO ==================
+        request.setAttribute("totalLessons", totalLessons); 
+        // =======================================================
 
         request.getRequestDispatcher("/admin/manageLessons.jsp").forward(request, response);
     }

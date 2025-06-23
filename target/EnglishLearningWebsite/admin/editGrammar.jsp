@@ -1,7 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="model.User" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<%-- THÊM DÒNG NÀY ĐỂ SỬA LỖI --%>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
 <!DOCTYPE html>
@@ -106,7 +105,7 @@
             border-radius: 10px;
             transition: all 0.3s ease;
             background: #f8f9fa;
-            color: #495057 !important; /* Force text color */
+            color: #495057 !important;
         }
         
         .form-control:focus {
@@ -121,30 +120,59 @@
             padding: 1rem 1.5rem;
         }
         
-        /* Fix for select dropdown */
+        /* Fixed select dropdown styling */
         select.form-control {
             background-color: #f8f9fa !important;
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.75rem center;
+            background-position: right 1rem center;
             background-repeat: no-repeat;
-            background-size: 1.5em 1.5em;
-            padding-right: 2.5rem;
+            background-size: 1.2em 1.2em;
+            padding-right: 3rem !important;
             color: #495057 !important;
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
+            cursor: pointer;
+            /* Ensure text fits properly */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            /* Minimum height to prevent text cutoff */
+            min-height: 3.5rem;
+            line-height: 1.4;
         }
         
         select.form-control:focus {
             background-color: white !important;
+            outline: none;
         }
         
-        /* Fix for option text */
+        /* Fix for option text - more specific styling */
         select.form-control option {
             color: #495057 !important;
             background-color: white !important;
-            padding: 8px 12px;
-            font-size: 1rem;
+            padding: 10px 15px !important;
+            font-size: 1rem !important;
+            line-height: 1.4 !important;
+            white-space: normal !important;
+            word-wrap: break-word !important;
+            /* Ensure options are visible */
+            display: block !important;
+            min-height: 2.5rem !important;
+        }
+        
+        /* Special styling for the difficulty select */
+        #difficultyLevel {
+            font-size: 1rem !important;
+            padding: 1rem 3rem 1rem 1.5rem !important;
+            height: auto !important;
+            min-height: 3.5rem !important;
+        }
+        
+        #difficultyLevel option {
+            padding: 12px 16px !important;
+            font-size: 0.95rem !important;
+            line-height: 1.3 !important;
         }
         
         .difficulty-badge {
@@ -291,6 +319,17 @@
                 width: 100%;
                 max-width: 300px;
             }
+            
+            /* Mobile select adjustments */
+            select.form-control {
+                font-size: 0.9rem !important;
+                padding: 0.8rem 2.5rem 0.8rem 1rem !important;
+            }
+            
+            select.form-control option {
+                font-size: 0.9rem !important;
+                padding: 8px 12px !important;
+            }
         }
         
         @media (max-width: 576px) {
@@ -408,13 +447,13 @@
                                 <select class="form-control form-control-lg" id="difficultyLevel" name="difficultyLevel" required>
                                     <option value="">-- Chọn mức độ khó --</option>
                                     <option value="Beginner" ${topicToEdit.difficultyLevel eq 'Beginner' ? 'selected' : ''}>
-                                        📚 Beginner (Người mới bắt đầu)
+                                        Beginner (Người mới bắt đầu)
                                     </option>
                                     <option value="Intermediate" ${topicToEdit.difficultyLevel eq 'Intermediate' ? 'selected' : ''}>
-                                        📖 Intermediate (Trung cấp)
+                                        Intermediate (Trung cấp)
                                     </option>
                                     <option value="Advanced" ${topicToEdit.difficultyLevel eq 'Advanced' ? 'selected' : ''}>
-                                        📕 Advanced (Nâng cao)
+                                        Advanced (Nâng cao)
                                     </option>
                                 </select>
                                 <div class="form-help-text">
@@ -487,27 +526,41 @@
         });
 
         $(document).ready(function() {
-            // Fix select appearance on different browsers
-            function fixSelectDisplay() {
+            // Enhanced select styling and functionality
+            function enhanceSelectDisplay() {
                 const select = $('#difficultyLevel');
                 
-                // Force refresh the select element
-                select.trigger('change');
-                
-                // Ensure proper styling
+                // Force proper styling
                 select.css({
                     'color': '#495057',
-                    'background-color': '#f8f9fa'
+                    'background-color': '#f8f9fa',
+                    'font-size': '1rem',
+                    'line-height': '1.4',
+                    'padding': '1rem 3rem 1rem 1.5rem'
                 });
+                
+                // Ensure all options are properly styled
+                select.find('option').each(function() {
+                    $(this).css({
+                        'color': '#495057',
+                        'background-color': 'white',
+                        'padding': '12px 16px',
+                        'font-size': '0.95rem'
+                    });
+                });
+                
+                // Trigger change to update badge
+                select.trigger('change');
             }
             
-            // Call fix on page load
-            setTimeout(fixSelectDisplay, 100);
+            // Call enhancement on page load and after a delay
+            setTimeout(enhanceSelectDisplay, 100);
+            setTimeout(enhanceSelectDisplay, 500);
             
             // Update difficulty badge when selection changes
             $('#difficultyLevel').on('change', function() {
                 const selectedValue = $(this).val();
-                const selectedText = $(this).find('option:selected').text();
+                const selectedText = $(this).find('option:selected').text().trim();
                 let badge = $('#currentDifficultyBadge');
                 
                 // If badge doesn't exist, create it
@@ -528,7 +581,6 @@
                     badge.hide();
                 }
                 
-                // Debug log
                 console.log('Selected value:', selectedValue);
                 console.log('Selected text:', selectedText);
             });
@@ -559,12 +611,9 @@
                     }
                     return false;
                 }
-                
-                // If validation passes, form will submit normally
-                // Loading overlay will be hidden by page redirect
             });
             
-            // Auto-save functionality (optional)
+            // Auto-save functionality
             let autoSaveTimer;
             
             function autoSave() {
@@ -654,14 +703,27 @@
                 $(this).closest('.form-group').removeClass('focused');
             });
             
-            // Additional debugging for select
-            $('#difficultyLevel').on('click focus', function() {
-                console.log('Select clicked/focused');
+            // Additional select debugging and fixes
+            $('#difficultyLevel').on('click focus mousedown', function() {
+                console.log('Select interacted with');
                 console.log('Current value:', $(this).val());
-                console.log('Options:', $(this).find('option').map(function() {
-                    return $(this).val() + ': ' + $(this).text();
-                }).get());
+                
+                // Force re-render to ensure proper display
+                setTimeout(function() {
+                    enhanceSelectDisplay();
+                }, 10);
             });
+            
+            // Browser-specific fixes
+            if (navigator.userAgent.indexOf('Chrome') > -1) {
+                $('#difficultyLevel').css('font-family', 'system-ui, -apple-system, sans-serif');
+            }
+            
+            // Final enhancement call
+            setTimeout(function() {
+                enhanceSelectDisplay();
+                console.log('Final select enhancement applied');
+            }, 1000);
         });
     </script>
     

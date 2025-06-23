@@ -52,6 +52,7 @@ public class ManageVocabularyServlet extends HttpServlet {
         request.setAttribute("vocabularyList", vocabularyList);
         request.setAttribute("currentPage", currentPage);
         request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalVocabulary", totalVocabulary);
 
         request.getRequestDispatcher("/admin/manageVocabulary.jsp").forward(request, response);
     }

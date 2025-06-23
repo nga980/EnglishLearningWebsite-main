@@ -35,6 +35,66 @@
             font-weight: 300;
             font-size: 2.2rem;
         }
+        .stat-card-container {
+            display: flex;
+            gap: 25px; /* Khoảng cách giữa các thẻ */
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 25px;
+            flex: 1; /* Để các thẻ có chiều rộng bằng nhau */
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease-in-out;
+            border: 1px solid #e9ecef;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card .stat-icon {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            font-size: 5rem;
+            color: rgba(0, 0, 0, 0.05);
+            transform: rotate(-15deg);
+            transition: all 0.4s ease;
+        }
+
+        .stat-card:hover .stat-icon {
+            transform: rotate(0deg) scale(1.1);
+            opacity: 0.1;
+        }
+
+        .stat-info {
+            position: relative;
+            z-index: 2;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Màu sắc riêng cho từng thẻ */
+        .stat-card.total-topics .stat-number { color: #667eea; }
+        .stat-card.current-page .stat-number { color: #3498db; }
+        .stat-card.displaying-count .stat-number { color: #2ecc71; }
         
         .add-btn {
             background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
@@ -404,6 +464,29 @@
                         <i class="fas fa-plus-circle mr-2"></i>
                         Thêm Chủ Đề Mới
                     </a>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card-container">
+            <div class="stat-card total-topics">
+                <i class="fas fa-layer-group stat-icon"></i>
+                <div class="stat-info">
+                    <div class="stat-number">${totalTopics}</div>
+                    <div class="stat-label">Tổng Số Chủ Đề</div>
+                </div>
+            </div>
+            <div class="stat-card current-page">
+                <i class="fas fa-file-alt stat-icon"></i>
+                <div class="stat-info">
+                    <div class="stat-number">${currentPage} / ${totalPages > 0 ? totalPages : 1}</div>
+                    <div class="stat-label">Trang Hiện Tại</div>
+                </div>
+            </div>
+            <div class="stat-card displaying-count">
+                <i class="fas fa-eye stat-icon"></i>
+                <div class="stat-info">
+                    <div class="stat-number">${grammarTopicList.size()}</div>
+                    <div class="stat-label">Chủ Đề Đang Hiển Thị</div>
                 </div>
             </div>
         </div>

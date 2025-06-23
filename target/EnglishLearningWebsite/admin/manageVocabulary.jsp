@@ -315,16 +315,16 @@
                     <div class="content-card mt-4">
                         <div class="row text-center">
                             <div class="col-md-4">
-                                <h4 class="text-primary">${vocabularyList.size()}</h4>
-                                <small class="text-muted">Từ vựng trên trang này</small>
+                                <h4 class="text-primary">${totalVocabulary}</h4>
+                                <small class="text-muted">Tổng Số Từ Vựng</small>
                             </div>
                             <div class="col-md-4">
-                                <h4 class="text-info">${currentPage}</h4>
-                                <small class="text-muted">Trang hiện tại</small>
+                                <h4 class="text-info">${currentPage} / ${totalPages > 0 ? totalPages : 1}</h4>
+                                <small class="text-muted">Trang Hiện Tại</small>
                             </div>
                             <div class="col-md-4">
-                                <h4 class="text-success">${totalPages}</h4>
-                                <small class="text-muted">Tổng số trang</small>
+                                <h4 class="text-success">${vocabularyList.size()}</h4>
+                                <small class="text-muted">Từ Vựng Đang Hiển Thị</small>
                             </div>
                         </div>
                     </div>

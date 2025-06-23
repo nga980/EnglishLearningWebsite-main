@@ -21,6 +21,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import model.User;
 import utils.SecurityUtils;
+import java.util.Map;
+import java.util.LinkedHashMap;
 
 public class UserDAO {
     private static final Logger LOGGER = Logger.getLogger(UserDAO.class.getName());
@@ -351,4 +353,35 @@ public boolean addUser(User user) {
            LOGGER.log(Level.SEVERE, "Lỗi khi xóa token đặt lại mật khẩu", e);
        }
    }
+    public Map<String, Integer> getMonthlyUserGrowth(int lastMonths) {
+        // LinkedHashMap giữ nguyên thứ tự chèn, rất quan trọng cho biểu đồ
+        Map<String, Integer> monthlyGrowth = new LinkedHashMap<>();
+
+        // Câu SQL để đếm số user mới mỗi tháng, trong 'lastMonths' gần đây
+        String query = "SELECT YEAR(created_at) AS year, MONTH(created_at) AS month, COUNT(user_id) AS count " +
+                       "FROM users " +
+                       "WHERE created_at >= CURDATE() - INTERVAL ? MONTH " +
+                       "GROUP BY YEAR(created_at), MONTH(created_at) " +
+                       "ORDER BY year, month;";
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, lastMonths);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int year = rs.getInt("year");
+                    int month = rs.getInt("month");
+                    int count = rs.getInt("count");
+                    // Tạo key dạng "Tháng M/YYYY", ví dụ "Tháng 6/2025"
+                    String monthKey = "Tháng " + month + "/" + year;
+                    monthlyGrowth.put(monthKey, count);
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Lỗi khi lấy dữ liệu tăng trưởng người dùng", e);
+        }
+
+        return monthlyGrowth;
+    }
 }
