@@ -16,7 +16,7 @@
     </style>
 </head>
 <body>
-    <jsp:include page="common/header.jsp"/>
+    <jsp:include page="/common/header.jsp"/>
 
     <div class="container error-container">
         <div class="error-code">500</div>
@@ -24,5 +24,8 @@
         <p class="text-muted">Chúng tôi đang làm việc để khắc phục sự cố. Vui lòng thử lại sau.</p>
         <a href="${pageContext.request.contextPath}/index.jsp" class="btn btn-primary mt-3">Quay về Trang Chủ</a>
     </div>
+    <footer class="mt-auto">
+        <jsp:include page="/common/footer.jsp"/>
+    </footer>
 </body>
 </html>

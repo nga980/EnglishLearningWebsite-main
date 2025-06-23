@@ -12,7 +12,7 @@
     <div class="collapse navbar-collapse" id="adminNavbar">
         <ul class="navbar-nav ml-auto">
             <li class="nav-item">
-                <a class="nav-link" href="${pageContext.request.contextPath}/index.jsp" target="_blank">Xem Website</a>
+                <a class="nav-link" href="${pageContext.request.contextPath}/home" target="_blank">Xem Website</a>
             </li>
             <c:if test="${not empty sessionScope.loggedInUser}">
                 <li class="nav-item">

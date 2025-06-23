@@ -13,8 +13,8 @@
         .error-message { font-size: 1.5rem; }
     </style>
 </head>
-<body>
-    <jsp:include page="common/header.jsp"/>
+<body class="d-flex flex-column h-75">
+    <jsp:include page="/common/header.jsp"/>
 
     <div class="container error-container">
         <div class="error-code">404</div>
@@ -22,5 +22,8 @@
         <p class="text-muted">Có vẻ như đường dẫn đã bị sai hoặc trang đã được di chuyển.</p>
         <a href="${pageContext.request.contextPath}/index.jsp" class="btn btn-primary mt-3">Quay về Trang Chủ</a>
     </div>
+    <footer class="mt-auto">
+        <jsp:include page="/common/footer.jsp"/>
+    </footer>
 </body>
 </html>

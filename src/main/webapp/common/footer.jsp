@@ -151,9 +151,9 @@
                     <div class="footer-col">
                         <h5>Hỗ trợ</h5>
                         <ul class="footer-links">
-                            <li><a href="#"><i class="fas fa-question-circle link-icon"></i>FAQ</a></li>
-                            <li><a href="#"><i class="fas fa-shield-alt link-icon"></i>Chính sách bảo mật</a></li>
-                            <li><a href="#"><i class="fas fa-file-contract link-icon"></i>Điều khoản dịch vụ</a></li>
+                            <li><a href="${pageContext.request.contextPath}/faq"><i class="fas fa-question-circle link-icon"></i>FAQ</a></li>
+                            <li><a href="${pageContext.request.contextPath}/privacy-policy"><i class="fas fa-shield-alt link-icon"></i>Chính sách bảo mật</a></li>
+                            <li><a href="${pageContext.request.contextPath}/terms-of-service"><i class="fas fa-file-contract link-icon"></i>Điều khoản dịch vụ</a></li>
                         </ul>
                     </div>
 
@@ -161,7 +161,7 @@
                     <div class="footer-col">
                         <h5>Liên hệ</h5>
                         <ul class="footer-links">
-                            <li><a href="#"><i class="fas fa-map-marker-alt link-icon"></i>Hà Nội, Việt Nam</a></li>
+                            <li><a><i class="fas fa-map-marker-alt link-icon"></i>Hà Nội, Việt Nam</a></li>
                             <li><a href="mailto:contact@english.com"><i class="fas fa-envelope link-icon"></i>contact@english.com</a></li>
                             <li><a href="tel:+84123456789"><i class="fas fa-phone link-icon"></i>+84 123 456 789</a></li>
                         </ul>

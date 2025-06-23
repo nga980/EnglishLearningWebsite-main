@@ -8,7 +8,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lịch Sử Làm Bài - English Learning</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -47,7 +47,6 @@
             color: white;
             padding: 3rem 0;
             margin-bottom: 2rem;
-            border-radius: 0 0 2rem 2rem;
         }
 
         .page-title {
@@ -123,7 +122,10 @@
             margin: 0;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+        }
+
+        .card-title i {
+            margin-right: 0.5rem;
         }
 
         .history-item {
@@ -147,17 +149,23 @@
             margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+        }
+
+        .lesson-title i {
+            margin-right: 0.5rem;
         }
 
         .score-badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
             padding: 0.5rem 1rem;
             border-radius: 0.5rem;
             font-weight: 600;
             font-size: 0.9rem;
+        }
+
+        .score-badge i {
+            margin-right: 0.5rem;
         }
 
         .score-excellent {
@@ -185,14 +193,21 @@
             font-size: 0.9rem;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
             margin-bottom: 1rem;
+        }
+
+        .date-time i {
+            margin-right: 0.5rem;
         }
 
         .action-buttons {
             display: flex;
-            gap: 0.5rem;
             flex-wrap: wrap;
+        }
+
+        .action-buttons .btn {
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
         }
 
         .btn-modern {
@@ -204,8 +219,11 @@
             border: none;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
             text-decoration: none;
+        }
+
+        .btn-modern i {
+            margin-right: 0.5rem;
         }
 
         .btn-primary-modern {
@@ -217,6 +235,7 @@
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
             color: white;
+            text-decoration: none;
         }
 
         .btn-secondary-modern {
@@ -229,6 +248,7 @@
             background: #e5e7eb;
             transform: translateY(-1px);
             color: #374151;
+            text-decoration: none;
         }
 
         .empty-state {
@@ -268,13 +288,17 @@
             transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+        }
+
+        .btn-start-learning i {
+            margin-right: 0.5rem;
         }
 
         .btn-start-learning:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
             color: white;
+            text-decoration: none;
         }
 
         /* Mobile Responsive */
@@ -328,12 +352,7 @@
 
             .btn-modern {
                 justify-content: center;
-            }
-
-            .stats-card .col-4 {
-                flex: 0 0 100%;
-                max-width: 100%;
-                margin-bottom: 1rem;
+                margin-right: 0;
             }
         }
 
@@ -358,7 +377,7 @@
         .stagger-3 { animation-delay: 0.3s; }
     </style>
 </head>
-<body>
+<body class="d-flex flex-column h-75">
     <%-- Nhúng header chung và truyền tham số để tô sáng mục menu --%>
     <jsp:include page="common/header.jsp">
          <jsp:param name="activePage" value="quiz-history"/>
@@ -371,7 +390,7 @@
                 <div class="row justify-content-center">
                     <div class="col-lg-8 text-center">
                         <h1 class="page-title fade-in-up">
-                            <i class="fas fa-history me-3"></i>
+                            <i class="fas fa-history mr-3"></i>
                             Lịch Sử Làm Bài
                         </h1>
                         <p class="page-subtitle fade-in-up stagger-1">
@@ -392,7 +411,7 @@
                                 <div class="stat-item">
                                     <span class="stat-number">${fn:length(quizHistory)}</span>
                                     <div class="stat-label">
-                                        <i class="fas fa-clipboard-list me-1"></i>
+                                        <i class="fas fa-clipboard-list mr-1"></i>
                                         Bài đã làm
                                     </div>
                                 </div>
@@ -409,7 +428,7 @@
                                         <fmt:formatNumber value="${(totalScore / totalQuestions) * 100}" maxFractionDigits="0" />%
                                     </span>
                                     <div class="stat-label">
-                                        <i class="fas fa-chart-line me-1"></i>
+                                        <i class="fas fa-chart-line mr-1"></i>
                                         Điểm trung bình
                                     </div>
                                 </div>
@@ -426,7 +445,7 @@
                                         ${excellentCount}
                                     </span>
                                     <div class="stat-label">
-                                        <i class="fas fa-star me-1"></i>
+                                        <i class="fas fa-star mr-1"></i>
                                         Điểm cao
                                     </div>
                                 </div>
@@ -457,31 +476,31 @@
                                         </div>
                                     </div>
                                     
-                                    <div class="col-lg-3 col-md-6 mb-3 mb-lg-0 text-center text-lg-start">
+                                    <div class="col-lg-3 col-md-6 mb-3 mb-lg-0 text-center text-lg-left">
                                         <c:set var="percentage" value="${(item.score / item.totalQuestions) * 100}" />
                                         <c:choose>
                                             <c:when test="${percentage >= 80}">
                                                 <span class="score-badge score-excellent">
                                                     <i class="fas fa-star"></i>
-                                                    ${item.score}/${item.totalQuestions} (${percentage}%)
+                                                    ${item.score}/${item.totalQuestions} (<fmt:formatNumber value="${percentage}" maxFractionDigits="0" />%)
                                                 </span>
                                             </c:when>
                                             <c:when test="${percentage >= 60}">
                                                 <span class="score-badge score-good">
                                                     <i class="fas fa-thumbs-up"></i>
-                                                    ${item.score}/${item.totalQuestions} (${percentage}%)
+                                                    ${item.score}/${item.totalQuestions} (<fmt:formatNumber value="${percentage}" maxFractionDigits="0" />%)
                                                 </span>
                                             </c:when>
                                             <c:when test="${percentage >= 40}">
                                                 <span class="score-badge score-average">
                                                     <i class="fas fa-minus-circle"></i>
-                                                    ${item.score}/${item.totalQuestions} (${percentage}%)
+                                                    ${item.score}/${item.totalQuestions} (<fmt:formatNumber value="${percentage}" maxFractionDigits="0" />%)
                                                 </span>
                                             </c:when>
                                             <c:otherwise>
                                                 <span class="score-badge score-poor">
                                                     <i class="fas fa-times-circle"></i>
-                                                    ${item.score}/${item.totalQuestions} (${percentage}%)
+                                                    ${item.score}/${item.totalQuestions} (<fmt:formatNumber value="${percentage}" maxFractionDigits="0" />%)
                                                 </span>
                                             </c:otherwise>
                                         </c:choose>
@@ -490,12 +509,12 @@
                                     <div class="col-lg-3 col-md-6">
                                         <div class="action-buttons">
                                             <a href="${pageContext.request.contextPath}/take-quiz?lessonId=${item.lessonId}" 
-                                               class="btn-modern btn-primary-modern">
+                                               class="btn btn-modern btn-primary-modern">
                                                 <i class="fas fa-redo"></i>
                                                 Làm lại
                                             </a>
                                             <a href="${pageContext.request.contextPath}/lesson-detail?lessonId=${item.lessonId}" 
-                                               class="btn-modern btn-secondary-modern">
+                                               class="btn btn-modern btn-secondary-modern">
                                                 <i class="fas fa-eye"></i>
                                                 Xem bài học
                                             </a>
@@ -526,7 +545,9 @@
         </div>
     </div>
     
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
     <script>
         // Add smooth scrolling and enhanced interactions
         document.addEventListener('DOMContentLoaded', function() {
@@ -559,6 +580,8 @@
             });
         });
     </script>
-    <jsp:include page="/common/footer.jsp" />
+    <footer class="mt-auto">
+        <jsp:include page="/common/footer.jsp"/>
+    </footer>
 </body>
 </html>

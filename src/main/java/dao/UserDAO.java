@@ -269,4 +269,86 @@ public boolean addUser(User user) {
         }
         return userList;
     }
+    /**
+    * Tìm người dùng bằng địa chỉ email.
+    * @param email Email của người dùng.
+    * @return Đối tượng User hoặc null nếu không tìm thấy.
+    */
+   public User findUserByEmail(String email) {
+       String query = "SELECT * FROM users WHERE email = ?";
+       try (Connection conn = DBContext.getConnection();
+            PreparedStatement ps = conn.prepareStatement(query)) {
+           ps.setString(1, email);
+           try (ResultSet rs = ps.executeQuery()) {
+               if (rs.next()) {
+                   User user = new User();
+                   user.setUserId(rs.getInt("user_id"));
+                   user.setUsername(rs.getString("username"));
+                   user.setEmail(rs.getString("email"));
+                   user.setFullName(rs.getString("full_name"));
+                   user.setRole(rs.getString("role"));
+                   user.setCreatedAt(rs.getTimestamp("created_at"));
+                   return user;
+               }
+           }
+       } catch (SQLException | ClassNotFoundException e) {
+           LOGGER.log(Level.SEVERE, "Lỗi khi tìm người dùng bằng email: " + email, e);
+       }
+       return null;
+   }
+
+   /**
+    * Lưu token đặt lại mật khẩu vào CSDL.
+    * @param userId ID người dùng.
+    * @param token Chuỗi token duy nhất.
+    * @param expiryDate Thời gian hết hạn của token.
+    */
+   public void createPasswordResetToken(int userId, String token, Timestamp expiryDate) {
+       String query = "INSERT INTO password_reset_tokens (user_id, token, expiry_date) VALUES (?, ?, ?)";
+       try (Connection conn = DBContext.getConnection();
+            PreparedStatement ps = conn.prepareStatement(query)) {
+           ps.setInt(1, userId);
+           ps.setString(2, token);
+           ps.setTimestamp(3, expiryDate);
+           ps.executeUpdate();
+       } catch (SQLException | ClassNotFoundException e) {
+           LOGGER.log(Level.SEVERE, "Lỗi khi tạo token đặt lại mật khẩu cho user ID: " + userId, e);
+       }
+   }
+
+   /**
+    * Lấy ID người dùng từ một token hợp lệ (chưa hết hạn).
+    * @param token Chuỗi token cần kiểm tra.
+    * @return ID người dùng nếu token hợp lệ, ngược lại trả về -1.
+    */
+   public int getUserIdByPasswordResetToken(String token) {
+       String query = "SELECT user_id FROM password_reset_tokens WHERE token = ? AND expiry_date > NOW()";
+       try (Connection conn = DBContext.getConnection();
+            PreparedStatement ps = conn.prepareStatement(query)) {
+           ps.setString(1, token);
+           try (ResultSet rs = ps.executeQuery()) {
+               if (rs.next()) {
+                   return rs.getInt("user_id");
+               }
+           }
+       } catch (SQLException | ClassNotFoundException e) {
+           LOGGER.log(Level.SEVERE, "Lỗi khi xác thực token đặt lại mật khẩu", e);
+       }
+       return -1; // Trả về -1 nếu token không hợp lệ hoặc đã hết hạn
+   }
+
+   /**
+    * Xóa token sau khi đã được sử dụng.
+    * @param token Chuỗi token cần xóa.
+    */
+   public void deletePasswordResetToken(String token) {
+       String query = "DELETE FROM password_reset_tokens WHERE token = ?";
+       try (Connection conn = DBContext.getConnection();
+            PreparedStatement ps = conn.prepareStatement(query)) {
+           ps.setString(1, token);
+           ps.executeUpdate();
+       } catch (SQLException | ClassNotFoundException e) {
+           LOGGER.log(Level.SEVERE, "Lỗi khi xóa token đặt lại mật khẩu", e);
+       }
+   }
 }

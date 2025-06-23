@@ -303,9 +303,6 @@
                                     <th scope="col">
                                         <i class="fas fa-quote-left"></i> Ví dụ (Example)
                                     </th>
-                                    <th scope="col">
-                                        <i class="fas fa-calendar-alt"></i> Ngày tạo
-                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -317,10 +314,6 @@
                                         <td class="vocab-word"><c:out value="${vocab.word}"/></td>
                                         <td class="vocab-meaning"><c:out value="${vocab.meaning}"/></td>
                                         <td class="vocab-example"><c:out value="${vocab.example}"/></td>
-                                        <td class="vocab-date">
-                                            <i class="far fa-clock"></i>
-                                            <fmt:formatDate value="${vocab.createdAt}" pattern="dd/MM/yyyy"/>
-                                        </td>
                                     </tr>
                                 </c:forEach>
                             </tbody>

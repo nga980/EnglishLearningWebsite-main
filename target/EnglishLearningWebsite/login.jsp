@@ -9,6 +9,7 @@
         body { background-color: #f8f9fa; }
         .login-container { max-width: 400px; margin: 100px auto; padding: 30px; background-color: #fff; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
     </style>
+    <jsp:include page="common/header.jsp"/>
 </head>
 <body>
     <div class="container">
@@ -38,9 +39,13 @@
                     <input type="password" class="form-control" id="password" name="password" required>
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">Đăng Nhập</button>
+                <div class="text-center mt-3">
+                    <a href="${pageContext.request.contextPath}/forgot-password">Quên mật khẩu?</a>
+                </div>
                 <p class="text-center mt-3">Chưa có tài khoản? <a href="register.jsp">Đăng ký tại đây</a></p>
             </form>
         </div>
     </div>
+    <jsp:include page="/common/footer.jsp"/>
 </body>
 </html>
