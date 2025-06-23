@@ -8,15 +8,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Admin Dashboard - English Learning</title>
-    
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/admin/css/admin-style.css">
-    
     <style>
-        .admin-main-content {
-            background-color: #f4f7f6;
-        }
+        /* CSS giữ nguyên như phiên bản trước */
+        .admin-main-content { background-color: #f4f7f6; }
         .stat-card {
             background-color: #fff;
             border: none;
@@ -31,11 +28,7 @@
             transform: translateY(-5px);
             box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
         }
-        .stat-card .card-body {
-            padding: 25px;
-            position: relative;
-            z-index: 2;
-        }
+        .stat-card .card-body { padding: 25px; position: relative; z-index: 2; }
         .stat-card .stat-icon {
             position: absolute;
             top: 50%;
@@ -70,7 +63,7 @@
             border-radius: 15px;
             box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
             margin-top: 20px;
-            height: 400px; /* Cố định chiều cao cho biểu đồ */
+            height: 400px;
         }
         .chart-container h5 {
             font-weight: 600;
@@ -78,9 +71,7 @@
             margin-bottom: 20px;
         }
         @media (max-width: 991px) {
-             .chart-container {
-                margin-top: 30px;
-            }
+             .chart-container { margin-top: 30px; }
         }
     </style>
 </head>
@@ -100,7 +91,7 @@
                     <div class="col-xl-3 col-md-6">
                         <div class="stat-card lessons">
                             <div class="card-body">
-                                <h5 class="card-title"><c:out value="${totalLessons}"/></h5>
+                                <h5 class="card-title">${totalLessons}</h5>
                                 <p class="card-text">Bài Học</p>
                             </div>
                             <i class="fas fa-chalkboard-teacher stat-icon"></i>
@@ -109,7 +100,7 @@
                     <div class="col-xl-3 col-md-6">
                         <div class="stat-card vocabulary">
                             <div class="card-body">
-                                <h5 class="card-title"><c:out value="${totalVocabulary}"/></h5>
+                                <h5 class="card-title">${totalVocabulary}</h5>
                                 <p class="card-text">Từ Vựng</p>
                             </div>
                              <i class="fas fa-book-open stat-icon"></i>
@@ -118,7 +109,7 @@
                     <div class="col-xl-3 col-md-6">
                         <div class="stat-card users">
                              <div class="card-body">
-                                <h5 class="card-title"><c:out value="${totalUsers}"/></h5>
+                                <h5 class="card-title">${totalUsers}</h5>
                                 <p class="card-text">Người Dùng</p>
                             </div>
                              <i class="fas fa-users stat-icon"></i>
@@ -127,7 +118,7 @@
                     <div class="col-xl-3 col-md-6">
                         <div class="stat-card grammar">
                             <div class="card-body">
-                                <h5 class="card-title"><c:out value="${totalGrammarTopics}"/></h5>
+                                <h5 class="card-title">${totalGrammarTopics}</h5>
                                 <p class="card-text">Chủ Đề Ngữ Pháp</p>
                             </div>
                              <i class="fas fa-spell-check stat-icon"></i>
@@ -173,11 +164,7 @@
                         labels: ['Bài Học', 'Từ Vựng', 'Ngữ Pháp'],
                         datasets: [{
                             label: 'Số lượng',
-                            data: [
-                                <c:out value="${totalLessons > 0 ? totalLessons : 0}"/>, 
-                                <c:out value="${totalVocabulary > 0 ? totalVocabulary : 0}"/>, 
-                                <c:out value="${totalGrammarTopics > 0 ? totalGrammarTopics : 0}"/>
-                            ],
+                            data: [${totalLessons}, ${totalVocabulary}, ${totalGrammarTopics}],
                             backgroundColor: ['#007bff', '#28a745', '#6f42c1'],
                             hoverOffset: 4
                         }]
@@ -185,21 +172,18 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: {
-                            legend: { position: 'bottom' }
-                        }
+                        plugins: { legend: { position: 'bottom' } }
                     }
                 });
             }
-
             // --- Biểu đồ 2: Tăng trưởng theo tháng (Line Chart) ---
             const ctxLine = document.getElementById('monthlyGrowthChart');
             if(ctxLine) {
-                // ***** DỮ LIỆU MẪU - BẠN SẼ CẦN THAY THẾ BẰNG DỮ LIỆU THẬT TỪ SERVLET *****
-                const monthLabels = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6'];
-                const newUsersData = [5, 10, 8, 15, 12, 20];
-                const newLessonsData = [2, 3, 2, 5, 4, 6];
-                // **************************************************************************
+                // Lấy dữ liệu thật từ request attribute mà servlet đã gửi qua
+                const monthLabels = ${growthLabels};
+                const lessonData = ${lessonGrowthValues};
+                const vocabData = ${vocabularyGrowthValues};
+                const userData = ${userGrowthValues};
 
                 new Chart(ctxLine, {
                     type: 'line',
@@ -208,17 +192,25 @@
                         datasets: [
                         {
                             label: 'Người dùng mới',
-                            data: newUsersData,
+                            data: userData,
                             borderColor: '#17a2b8',
                             backgroundColor: 'rgba(23, 162, 184, 0.1)',
                             fill: true,
-                            tension: 0.4 // Làm cho đường cong mượt hơn
+                            tension: 0.4
                         },
                         {
                             label: 'Bài học mới',
-                            data: newLessonsData,
+                            data: lessonData,
                             borderColor: '#007bff',
                             backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Từ vựng mới',
+                            data: vocabData,
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
                             fill: true,
                             tension: 0.4
                         }]
@@ -229,14 +221,10 @@
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                ticks: {
-                                    precision: 0
-                                }
+                                ticks: { precision: 0 }
                             }
                         },
-                        plugins: {
-                            legend: { position: 'top' }
-                        }
+                        plugins: { legend: { position: 'top' } }
                     }
                 });
             }

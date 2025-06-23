@@ -21,6 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class VocabularyDAO {
     private static final Logger LOGGER = Logger.getLogger(VocabularyDAO.class.getName());
@@ -289,5 +293,29 @@ public class VocabularyDAO {
             LOGGER.log(Level.SEVERE, "Lỗi khi lấy danh sách từ vựng theo trang", e);
         }
         return vocabList;
+    }
+    /**
+ * Lấy dữ liệu tăng trưởng số lượng từ vựng mới theo từng tháng.
+ * @param lastMonths Số tháng gần nhất cần thống kê.
+ * @return Một Map với Key là "Tháng M/YYYY" và Value là số từ vựng mới.
+ */
+    public Map<String, Integer> getMonthlyVocabularyGrowth(int lastMonths) {
+        Map<String, Integer> monthlyGrowth = new LinkedHashMap<>();
+        String query = "SELECT YEAR(created_at) AS year, MONTH(created_at) AS month, COUNT(vocab_id) AS count " +
+                       "FROM vocabulary " +
+                       "WHERE created_at >= CURDATE() - INTERVAL ? MONTH " +
+                       "GROUP BY YEAR(created_at), MONTH(created_at) ORDER BY year, month;";
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, lastMonths);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String monthKey = "Tháng " + rs.getInt("month") + "/" + rs.getInt("year");
+                    monthlyGrowth.put(monthKey, rs.getInt("count"));
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Lỗi khi lấy dữ liệu tăng trưởng từ vựng", e);
+        }
+        return monthlyGrowth;
     }
 }

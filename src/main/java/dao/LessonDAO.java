@@ -20,6 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class LessonDAO {
     private static final Logger LOGGER = Logger.getLogger(LessonDAO.class.getName());
@@ -231,5 +235,29 @@ public class LessonDAO {
             LOGGER.log(Level.SEVERE, "Lỗi khi lấy danh sách bài học gần đây", e);
         }
         return lessons;
+    }
+        /**
+     * Lấy dữ liệu tăng trưởng số lượng bài học mới theo từng tháng.
+     * @param lastMonths Số tháng gần nhất cần thống kê.
+     * @return Một Map với Key là "Tháng M/YYYY" và Value là số bài học mới.
+     */
+    public Map<String, Integer> getMonthlyLessonGrowth(int lastMonths) {
+        Map<String, Integer> monthlyGrowth = new LinkedHashMap<>();
+        String query = "SELECT YEAR(created_at) AS year, MONTH(created_at) AS month, COUNT(lesson_id) AS count " +
+                       "FROM lessons " +
+                       "WHERE created_at >= CURDATE() - INTERVAL ? MONTH " +
+                       "GROUP BY YEAR(created_at), MONTH(created_at) ORDER BY year, month;";
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, lastMonths);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String monthKey = "Tháng " + rs.getInt("month") + "/" + rs.getInt("year");
+                    monthlyGrowth.put(monthKey, rs.getInt("count"));
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Lỗi khi lấy dữ liệu tăng trưởng bài học", e);
+        }
+        return monthlyGrowth;
     }
 }
