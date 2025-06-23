@@ -1,7 +1,9 @@
 controller\VocabularyListServlet.class
+controller\FlashcardPageServlet.class
 controller\QuizHistoryServlet.class
 controller\ForgotPasswordServlet.class
 controller\ChangePasswordServlet.class
+utils\PasswordUtils.class
 dao\UserDAO.class
 model\User.class
 model\GrammarTopic.class
@@ -54,6 +56,7 @@ model\Vocabulary.class
 dao\VocabularyDAO.class
 model\Lesson.class
 controller\EditVocabularyFormServlet.class
+controller\BaseManageServlet.class
 controller\UpdateLessonServlet.class
 controller\FaqServlet.class
 controller\ManageQuizServlet.class

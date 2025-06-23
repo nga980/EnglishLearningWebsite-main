@@ -6,15 +6,11 @@ import java.io.IOException;
 import java.util.List;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 @WebServlet(name = "ManageVocabularyServlet", urlPatterns = {"/admin/manage-vocabulary"})
-public class ManageVocabularyServlet extends HttpServlet {
+public class ManageVocabularyServlet extends BaseManageServlet<Vocabulary> {
 
     private VocabularyDAO vocabularyDAO;
-    private static final int PAGE_SIZE = 10; // Đặt số lượng từ vựng trên mỗi trang
 
     @Override
     public void init() {
@@ -22,38 +18,29 @@ public class ManageVocabularyServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        request.setCharacterEncoding("UTF-8");
-
-        String pageStr = request.getParameter("page");
-        int currentPage = 1;
-        if (pageStr != null && !pageStr.isEmpty()) {
-            try {
-                currentPage = Integer.parseInt(pageStr);
-            } catch (NumberFormatException e) {
-                currentPage = 1;
-            }
-        }
-
-        int totalVocabulary = vocabularyDAO.countTotalVocabulary();
-        int totalPages = (int) Math.ceil((double) totalVocabulary / PAGE_SIZE);
-
-        if (currentPage > totalPages && totalPages > 0) {
-            currentPage = totalPages;
-        }
-        if (currentPage < 1) {
-            currentPage = 1;
-        }
-
-        List<Vocabulary> vocabularyList = vocabularyDAO.getVocabularyByPage(currentPage, PAGE_SIZE);
-
-        request.setAttribute("vocabularyList", vocabularyList);
-        request.setAttribute("currentPage", currentPage);
-        request.setAttribute("totalPages", totalPages);
-        request.setAttribute("totalVocabulary", totalVocabulary);
-
-        request.getRequestDispatcher("/admin/manageVocabulary.jsp").forward(request, response);
+    protected int getTotalItems() {
+        return vocabularyDAO.countTotalVocabulary();
     }
+
+    @Override
+    protected List<Vocabulary> getItemsByPage(int currentPage, int pageSize) {
+        return vocabularyDAO.getVocabularyByPage(currentPage, pageSize);
+    }
+
+    @Override
+    protected String getItemListAttributeName() {
+        return "vocabularyList";
+    }
+
+    @Override
+    protected String getTotalItemsAttributeName() {
+        return "totalVocabulary";
+    }
+
+    @Override
+    protected String getJspPage() {
+        return "/admin/manageVocabulary.jsp";
+    }
+    
+    // Giữ nguyên PAGE_SIZE mặc định là 10
 }

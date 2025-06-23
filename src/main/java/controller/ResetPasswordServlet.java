@@ -1,7 +1,7 @@
 package controller;
 
 import dao.UserDAO;
-import utils.SecurityUtils;
+import utils.PasswordUtils; // THAY ĐỔI
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -27,11 +27,9 @@ public class ResetPasswordServlet extends HttpServlet {
         int userId = userDAO.getUserIdByPasswordResetToken(token);
 
         if (userId != -1) {
-            // Token hợp lệ, chuyển đến trang nhập mật khẩu mới
             request.setAttribute("token", token);
             request.getRequestDispatcher("resetPassword.jsp").forward(request, response);
         } else {
-            // Token không hợp lệ hoặc đã hết hạn
             request.setAttribute("error", "Đường link đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.");
             request.getRequestDispatcher("login.jsp").forward(request, response);
         }
@@ -54,7 +52,7 @@ public class ResetPasswordServlet extends HttpServlet {
 
         if (newPassword == null || newPassword.length() < 8) {
             request.setAttribute("error", "Mật khẩu mới phải có ít nhất 8 ký tự.");
-            request.setAttribute("token", token); // Gửi lại token để form không bị mất
+            request.setAttribute("token", token);
             request.getRequestDispatcher("resetPassword.jsp").forward(request, response);
             return;
         }
@@ -65,13 +63,14 @@ public class ResetPasswordServlet extends HttpServlet {
             request.getRequestDispatcher("resetPassword.jsp").forward(request, response);
             return;
         }
-
-        String hashedNewPassword = SecurityUtils.hashPassword(newPassword);
+        
+        // HASH mật khẩu mới bằng BCrypt
+        String hashedNewPassword = PasswordUtils.hashPassword(newPassword);
         boolean success = userDAO.updatePassword(userId, hashedNewPassword);
 
         HttpSession session = request.getSession();
         if (success) {
-            userDAO.deletePasswordResetToken(token); // Xóa token đã sử dụng
+            userDAO.deletePasswordResetToken(token);
             session.setAttribute("successMessage", "Mật khẩu của bạn đã được cập nhật thành công. Vui lòng đăng nhập.");
             response.sendRedirect(request.getContextPath() + "/login");
         } else {

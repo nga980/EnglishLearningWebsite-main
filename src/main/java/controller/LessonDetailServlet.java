@@ -1,28 +1,31 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
+// File: src/main/java/controller/LessonDetailServlet.java
 package controller;
 
 import dao.LessonDAO;
+import dao.VocabularyDAO; // Thêm import
 import java.io.IOException;
+import java.util.List; // Thêm import
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.Lesson;
+import model.Vocabulary; // Thêm import
 
-@WebServlet(name = "LessonDetailServlet", urlPatterns = {"/lesson-detail"}) // Ánh xạ servlet tới URL /lesson-detail
+@WebServlet(name = "LessonDetailServlet", urlPatterns = {"/lesson-detail"})
 public class LessonDetailServlet extends HttpServlet {
 
     private LessonDAO lessonDAO;
+    private VocabularyDAO vocabularyDAO; // Thêm DAO mới
 
     @Override
     public void init() {
         lessonDAO = new LessonDAO();
+        vocabularyDAO = new VocabularyDAO(); // Khởi tạo
     }
 
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
@@ -35,19 +38,21 @@ public class LessonDetailServlet extends HttpServlet {
                 Lesson lesson = lessonDAO.getLessonById(lessonId);
 
                 if (lesson != null) {
+                    // LẤY THÊM TỪ VỰNG CỦA BÀI HỌC
+                    List<Vocabulary> lessonVocabulary = vocabularyDAO.getVocabularyByLessonId(lessonId);
+                    
                     request.setAttribute("lesson", lesson);
+                    request.setAttribute("lessonVocabulary", lessonVocabulary); // Gửi danh sách từ vựng sang JSP
+                    
                     request.getRequestDispatcher("lessonDetail.jsp").forward(request, response);
                 } else {
-                    // Không tìm thấy bài học, có thể hiển thị trang lỗi 404 hoặc thông báo
-                    response.getWriter().println("Không tìm thấy bài học với ID: " + lessonId);
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy bài học với ID: " + lessonId);
                 }
             } catch (NumberFormatException e) {
-                // lessonId không phải là số, xử lý lỗi
-                response.getWriter().println("ID bài học không hợp lệ.");
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID bài học không hợp lệ.");
             }
         } else {
-            // Không có lessonId, có thể chuyển hướng về trang danh sách bài học
-            response.sendRedirect(request.getContextPath() + "/lessons");
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Thiếu ID bài học.");
         }
     }
 }

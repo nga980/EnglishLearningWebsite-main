@@ -2,7 +2,7 @@ package controller;
 
 import dao.UserDAO;
 import model.User;
-import utils.SecurityUtils;
+import utils.PasswordUtils; // THAY ĐỔI
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -42,7 +42,8 @@ public class ChangePasswordServlet extends HttpServlet {
         }
 
         String storedHashedPassword = userDAO.getHashedPasswordById(loggedInUser.getUserId());
-        if (!SecurityUtils.checkPassword(currentPassword, storedHashedPassword)) {
+        // SỬ DỤNG BCrypt để kiểm tra
+        if (!PasswordUtils.checkPassword(currentPassword, storedHashedPassword)) {
             request.setAttribute("errorMessage", "Mật khẩu hiện tại không chính xác.");
             request.getRequestDispatcher("profile.jsp").forward(request, response);
             return;
@@ -54,19 +55,19 @@ public class ChangePasswordServlet extends HttpServlet {
             return;
         }
 
+        // Tăng yêu cầu độ dài mật khẩu cho an toàn hơn
         if (newPassword.length() < 8) {
             request.setAttribute("errorMessage", "Mật khẩu mới phải có ít nhất 8 ký tự.");
             request.getRequestDispatcher("profile.jsp").forward(request, response);
             return;
         }
 
-        String newHashedPassword = SecurityUtils.hashPassword(newPassword);
+        // HASH mật khẩu mới bằng BCrypt
+        String newHashedPassword = PasswordUtils.hashPassword(newPassword);
         boolean success = userDAO.updatePassword(loggedInUser.getUserId(), newHashedPassword);
 
         if (success) {
-            // Đặt message vào session
             session.setAttribute("successMessage", "Đổi mật khẩu thành công!");
-            // Redirect về servlet /profile để nó có thể tải lại trang profile một cách sạch sẽ
             response.sendRedirect(request.getContextPath() + "/profile"); 
         } else {
             request.setAttribute("errorMessage", "Đã xảy ra lỗi. Không thể đổi mật khẩu.");

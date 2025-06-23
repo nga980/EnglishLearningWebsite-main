@@ -1,8 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@page import="model.User"%>       <%-- Giữ nguyên theo yêu cầu của bạn --%>
-<%@page import="model.Vocabulary"%> <%-- THÊM IMPORT CHO VOCABULARY (để nhất quán nếu dùng scriptlet) --%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <!DOCTYPE html>
 <html>
@@ -11,7 +8,12 @@
     <title>Danh Sách Từ Vựng - English Learning</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
+    <style>        
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .main-container { background: rgba(255, 255, 255, 0.95); border-radius: 20px; padding: 30px; }
+        .page-title-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .page-title { margin-bottom: 0; }
+        .btn-flashcard { font-size: 1.1rem; padding: 12px 25px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
@@ -266,6 +268,10 @@
                 transform: translateY(0);
             }
         }
+        .vocab-table { background: white; border-radius: 15px; overflow: hidden; }
+        .vocab-table thead th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .vocab-image { max-width: 100px; border-radius: 8px; }
+        .audio-player { width: 100%; min-width: 200px; height: 40px; }
     </style>
 </head>
 <body>
@@ -275,15 +281,15 @@
 
     <div class="container-fluid">
         <div class="main-container">
-            <h2 class="page-title">
-                <i class="fas fa-book"></i>
-                Danh Sách Từ Vựng
-            </h2>
-            
-            <%-- Tùy chọn: Nếu bạn có lọc theo lessonId, bạn có thể hiển thị thông tin bài học đang lọc ở đây --%>
-            <%-- <c:if test="${not empty filterLessonId}">
-                    <h4>Từ vựng cho Bài học ID: <c:out value="${filterLessonId}"/></h4>
-                </c:if> --%>
+            <div class="page-title-container">
+                <h2 class="page-title">
+                    <i class="fas fa-book"></i>
+                    Danh Sách Từ Vựng
+                </h2>
+                <a href="${pageContext.request.contextPath}/flashcards" class="btn btn-success btn-flashcard">
+                    <i class="fas fa-layer-group"></i> Ôn tập với Flashcard
+                </a>
+            </div>
 
             <c:choose>
                 <c:when test="${not empty vocabularyList}">
@@ -291,29 +297,31 @@
                         <table class="table vocab-table">
                             <thead>
                                 <tr>
-                                    <th scope="col">
-                                        <i class="fas fa-hashtag"></i> STT
-                                    </th>
-                                    <th scope="col">
-                                        <i class="fas fa-font"></i> Từ (Word)
-                                    </th>
-                                    <th scope="col">
-                                        <i class="fas fa-language"></i> Nghĩa (Meaning)
-                                    </th>
-                                    <th scope="col">
-                                        <i class="fas fa-quote-left"></i> Ví dụ (Example)
-                                    </th>
+                                    <th>STT</th>
+                                    <th>Hình ảnh</th>
+                                    <th>Từ</th>
+                                    <th>Nghĩa</th>
+                                    <th>Ví dụ</th>
+                                    <th>Phát âm</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <c:forEach var="vocab" items="${vocabularyList}" varStatus="loop">
                                     <tr>
+                                        <td><span class="row-number">${loop.count + (currentPage - 1) * 15}</span></td>
                                         <td>
-                                            <span class="row-number">${loop.count}</span>
+                                            <c:if test="${not empty vocab.imageUrl}">
+                                                <img src="${pageContext.request.contextPath}/${vocab.imageUrl}" class="vocab-image" alt="<c:out value='${vocab.word}'/>">
+                                            </c:if>
                                         </td>
                                         <td class="vocab-word"><c:out value="${vocab.word}"/></td>
                                         <td class="vocab-meaning"><c:out value="${vocab.meaning}"/></td>
-                                        <td class="vocab-example"><c:out value="${vocab.example}"/></td>
+                                        <td><c:out value="${vocab.example}"/></td>
+                                        <td>
+                                            <c:if test="${not empty vocab.audioUrl}">
+                                                <audio controls class="audio-player" src="${pageContext.request.contextPath}/${vocab.audioUrl}"></audio>
+                                            </c:if>
+                                        </td>
                                     </tr>
                                 </c:forEach>
                             </tbody>
@@ -321,16 +329,9 @@
                     </div>
                 </c:when>
                 <c:otherwise>
-                    <div class="no-data-alert">
-                        <i class="fas fa-book-open"></i>
-                        <div>
-                            <strong>Chưa có từ vựng nào!</strong><br>
-                            Hãy bắt đầu thêm từ vựng để học tập hiệu quả hơn.
-                        </div>
-                    </div>
+                    <div class="alert alert-info">Chưa có từ vựng nào.</div>
                 </c:otherwise>
             </c:choose>
-            
             <c:if test="${totalPages > 1}">
                 <nav aria-label="Page navigation" class="mt-4">
                     <ul class="pagination justify-content-center">
@@ -355,8 +356,6 @@
         </div>
     </div>
     <jsp:include page="/common/footer.jsp" />
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
 </body>
 </html>

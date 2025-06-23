@@ -137,7 +137,7 @@
         }
 
         .lesson-content {
-            white-space: pre-wrap;
+            white-space: normal;
             line-height: 1.8;
             font-size: 1.1rem;
             color: #2c3e50;
@@ -444,6 +444,72 @@
                 box-shadow: none;
             }
         }
+        .vocab-section {
+            padding: 2rem;
+            background: white;
+        }
+        .vocab-section .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 2.5rem;
+        }
+        .vocab-list-item {
+            background: #fff;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            padding: 1.25rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+        }
+        .vocab-list-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+            border-color: #667eea;
+        }
+        .vocab-list-item .vocab-term strong {
+            font-size: 1.2rem;
+            color: #667eea;
+        }
+        .vocab-list-item audio { height: 40px; max-width: 250px; border-radius: 20px; }
+        .vocab-example {
+            margin-top: 0.75rem;
+            padding-left: 1rem;
+            border-left: 3px solid #667eea;
+            color: #495057;
+            font-style: italic;
+        }
+        .vocab-image { margin-top: 0.75rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .action-buttons-container {
+            padding: 3rem 2rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 0 0 20px 20px;
+            text-align: center;
+        }
+        .action-buttons { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+        .action-buttons .btn {
+            font-weight: 600;
+            border-radius: 50px;
+            padding: 0.8rem 2rem;
+            transition: all 0.3s ease;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .action-buttons .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            text-decoration: none;
+        }
+        .action-buttons .btn-success { background: linear-gradient(45deg, #28a745, #20c997); color: white !important; }
+        .action-buttons .btn-primary { background: linear-gradient(45deg, #667eea, #764ba2); color: white !important; }        
     </style>
 </head>
 <body>
@@ -511,20 +577,53 @@
                             </div>
                         </c:if>
                     </div>
+                    <c:if test="${not empty lessonVocabulary}">
+                        <div class="vocab-section fade-in">
+                            <h2 class="text-center page-title">
+                                <i class="fas fa-list-alt"></i> Từ vựng của bài học
+                            </h2>
+                            <div class="list-group">
+                                <c:forEach var="vocab" items="${lessonVocabulary}">
+                                    <div class="list-group-item flex-column align-items-start vocab-list-item">
+                                        <div class="d-flex w-100 justify-content-between align-items-start flex-wrap">
+                                            <div class="vocab-term mb-2 flex-grow-1">
+                                                <h5 class="mb-1"><strong><c:out value="${vocab.word}"/></strong></h5>
+                                                <small class="text-muted"><c:out value="${vocab.meaning}"/></small>
+                                            </div>
+                                            <c:if test="${not empty vocab.audioUrl}">
+                                                <div class="ml-3">
+                                                    <audio controls class="audio-player" src="${pageContext.request.contextPath}/${vocab.audioUrl}"></audio>
+                                                </div>
+                                            </c:if>
+                                        </div>
+                                        <c:if test="${not empty vocab.example}">
+                                            <div class="w-100 vocab-example">
+                                                <strong>Ví dụ:</strong> <c:out value="${vocab.example}"/>
+                                            </div>
+                                        </c:if>
+                                        <c:if test="${not empty vocab.imageUrl}">
+                                            <img src="${pageContext.request.contextPath}/${vocab.imageUrl}" alt="<c:out value='${vocab.word}'/>" class="vocab-image img-thumbnail mt-2" style="max-height: 120px;">
+                                        </c:if>
+                                    </div>
+                                </c:forEach>
+                            </div>
+                        </div>
+                    </c:if>
 
                     <!-- Enhanced Quiz Section -->
-                    <div class="quiz-section fade-in">
-                        <i class="fas fa-brain quiz-icon mb-3" style="font-size: 3rem; opacity: 0.9;"></i>
-                        <h2 class="quiz-title">Kiểm tra kiến thức của bạn!</h2>
-                        <p class="quiz-description">
-                            Hãy làm bài trắc nghiệm ngắn để củng cố kiến thức từ bài học này. 
-                            Đây là cách tốt nhất để ghi nhớ những gì bạn vừa học được.
-                        </p>
-                        <a href="${pageContext.request.contextPath}/take-quiz?lessonId=${lesson.lessonId}" 
-                           class="quiz-btn">
-                            <i class="fas fa-play"></i>
-                            Bắt Đầu Làm Bài
-                        </a>
+                    <div class="action-buttons-container fade-in">
+                        <h3 class="quiz-title">Sẵn sàng thực hành?</h3>
+                        <p class="quiz-description">Củng cố kiến thức với các bài tập dành riêng cho bài học này.</p>
+                        <div class="action-buttons">
+                            <c:if test="${not empty lessonVocabulary}">
+                                <a href="${pageContext.request.contextPath}/flashcards?lessonId=${lesson.lessonId}" class="btn btn-success">
+                                    <i class="fas fa-layer-group"></i> Học Từ vựng (Flashcard)
+                                </a>
+                            </c:if>
+                            <a href="${pageContext.request.contextPath}/take-quiz?lessonId=${lesson.lessonId}" class="btn btn-primary">
+                                <i class="fas fa-question-circle"></i> Làm Bài Trắc Nghiệm
+                            </a>
+                        </div>
                     </div>
                 </div>
             </c:when>

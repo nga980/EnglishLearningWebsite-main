@@ -1,38 +1,29 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package model;
 
-/**
- *
- * @author admin
- */
 import java.sql.Timestamp;
 
 public class Vocabulary {
     private int vocabId;
     private String word;
-    private String meaning; // Nghĩa của từ
-    private String example; // Ví dụ câu
-    private Integer lessonId; // ID của bài học liên quan (có thể null)
+    private String meaning;
+    private String example;
+    private Integer lessonId;
+    private String imageUrl; // Thêm mới
+    private String audioUrl; // Thêm mới
     private Timestamp createdAt;
 
-    // Các trường tùy chọn có thể thêm sau này:
-    // private String pronunciationIPA; // Phiên âm IPA
-    // private String audioUrl; // Đường dẫn file âm thanh phát âm
-    // private String imageUrl; // Đường dẫn hình ảnh minh họa
-
-    // Constructors
     public Vocabulary() {
     }
 
-    public Vocabulary(int vocabId, String word, String meaning, String example, Integer lessonId, Timestamp createdAt) {
+    // Cập nhật Constructor để bao gồm các trường mới
+    public Vocabulary(int vocabId, String word, String meaning, String example, Integer lessonId, String imageUrl, String audioUrl, Timestamp createdAt) {
         this.vocabId = vocabId;
         this.word = word;
         this.meaning = meaning;
         this.example = example;
         this.lessonId = lessonId;
+        this.imageUrl = imageUrl;
+        this.audioUrl = audioUrl;
         this.createdAt = createdAt;
     }
 
@@ -76,6 +67,23 @@ public class Vocabulary {
     public void setLessonId(Integer lessonId) {
         this.lessonId = lessonId;
     }
+    
+    // Getters và Setters cho các trường mới
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getAudioUrl() {
+        return audioUrl;
+    }
+
+    public void setAudioUrl(String audioUrl) {
+        this.audioUrl = audioUrl;
+    }
 
     public Timestamp getCreatedAt() {
         return createdAt;
@@ -85,7 +93,7 @@ public class Vocabulary {
         this.createdAt = createdAt;
     }
 
-    // toString (tùy chọn)
+    // Cập nhật toString
     @Override
     public String toString() {
         return "Vocabulary{" +
@@ -94,6 +102,8 @@ public class Vocabulary {
                 ", meaning='" + meaning + '\'' +
                 ", example='" + example + '\'' +
                 ", lessonId=" + lessonId +
+                ", imageUrl='" + imageUrl + '\'' +
+                ", audioUrl='" + audioUrl + '\'' +
                 ", createdAt=" + createdAt +
                 '}';
     }
