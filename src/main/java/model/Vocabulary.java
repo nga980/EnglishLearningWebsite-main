@@ -1,6 +1,8 @@
+// File: src/main/java/model/Vocabulary.java
 package model;
 
 import java.sql.Timestamp;
+import java.util.Base64; // Dùng để hiển thị ảnh tạm thời nếu cần
 
 public class Vocabulary {
     private int vocabId;
@@ -8,27 +10,15 @@ public class Vocabulary {
     private String meaning;
     private String example;
     private Integer lessonId;
-    private String imageUrl; // Thêm mới
-    private String audioUrl; // Thêm mới
+    private byte[] imageData; // THAY ĐỔI
+    private byte[] audioData; // THAY ĐỔI
     private Timestamp createdAt;
+
+    // Constructors, Getters, and Setters
 
     public Vocabulary() {
     }
-
-    // Cập nhật Constructor để bao gồm các trường mới
-    public Vocabulary(int vocabId, String word, String meaning, String example, Integer lessonId, String imageUrl, String audioUrl, Timestamp createdAt) {
-        this.vocabId = vocabId;
-        this.word = word;
-        this.meaning = meaning;
-        this.example = example;
-        this.lessonId = lessonId;
-        this.imageUrl = imageUrl;
-        this.audioUrl = audioUrl;
-        this.createdAt = createdAt;
-    }
-
-    // Getters and Setters
-    public int getVocabId() {
+    public int getVocabId() {    
         return vocabId;
     }
 
@@ -67,44 +57,39 @@ public class Vocabulary {
     public void setLessonId(Integer lessonId) {
         this.lessonId = lessonId;
     }
-    
-    // Getters và Setters cho các trường mới
-    public String getImageUrl() {
-        return imageUrl;
+
+    public byte[] getImageData() {
+        return imageData;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setImageData(byte[] imageData) {
+        this.imageData = imageData;
     }
 
-    public String getAudioUrl() {
-        return audioUrl;
+    public byte[] getAudioData() {
+        return audioData;
     }
 
-    public void setAudioUrl(String audioUrl) {
-        this.audioUrl = audioUrl;
+    public void setAudioData(byte[] audioData) {
+        this.audioData = audioData;
     }
 
     public Timestamp getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Timestamp createdAt) {
+    // Getters and Setters đã cập nhật
+    public void setCreatedAt(Timestamp createdAt) {    
         this.createdAt = createdAt;
     }
 
-    // Cập nhật toString
-    @Override
-    public String toString() {
-        return "Vocabulary{" +
-                "vocabId=" + vocabId +
-                ", word='" + word + '\'' +
-                ", meaning='" + meaning + '\'' +
-                ", example='" + example + '\'' +
-                ", lessonId=" + lessonId +
-                ", imageUrl='" + imageUrl + '\'' +
-                ", audioUrl='" + audioUrl + '\'' +
-                ", createdAt=" + createdAt +
-                '}';
+    // Helper method để kiểm tra xem có ảnh không (dùng trong JSP)
+    public boolean getHasImage() {
+        return this.imageData != null && this.imageData.length > 0;
+    }
+
+    // Helper method để kiểm tra xem có audio không
+    public boolean getHasAudio() {
+        return this.audioData != null && this.audioData.length > 0;
     }
 }

@@ -2,9 +2,8 @@ package controller;
 
 import dao.VocabularyDAO;
 import model.Vocabulary;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.io.InputStream;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -14,49 +13,55 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
 
+/**
+ * Servlet xử lý việc thêm từ vựng mới, bao gồm cả việc upload file ảnh và audio
+ * trực tiếp vào cơ sở dữ liệu dưới dạng BLOB.
+ */
 @WebServlet(name = "AddVocabularyServlet", urlPatterns = {"/admin/add-vocabulary-action"})
-@MultipartConfig
+@MultipartConfig // Bắt buộc phải có để xử lý form có file upload
 public class AddVocabularyServlet extends HttpServlet {
 
     private VocabularyDAO vocabularyDAO;
-    private static final String UPLOAD_DIR = "uploads";
 
     @Override
     public void init() {
         vocabularyDAO = new VocabularyDAO();
     }
-    
-    // THAY ĐỔI LẠI: Xóa doGet để servlet không chuyển hướng lung tung
-    // và chỉ chấp nhận phương thức POST.
-    
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         HttpSession session = request.getSession();
 
+        // Lấy dữ liệu từ các trường text
         String word = request.getParameter("vocabWord");
         String meaning = request.getParameter("vocabMeaning");
         String example = request.getParameter("vocabExample");
         String lessonIdStr = request.getParameter("lessonId");
 
+        // Validation cơ bản
         if (word == null || word.trim().isEmpty() || meaning == null || meaning.trim().isEmpty()) {
             request.setAttribute("errorMessage_addVocab", "Từ (Word) và Nghĩa (Meaning) không được để trống.");
             request.getRequestDispatcher("/admin/addVocabulary.jsp").forward(request, response);
             return;
         }
         
-        String imageUrl = uploadFile(request, "imageFile", "images");
-        String audioUrl = uploadFile(request, "audioFile", "audio");
+        // Đọc dữ liệu của file được upload thành mảng byte[]
+        byte[] imageData = getBytesFromPart(request.getPart("imageFile"));
+        byte[] audioData = getBytesFromPart(request.getPart("audioFile"));
 
+        // Tạo đối tượng Vocabulary mới
         Vocabulary newVocab = new Vocabulary();
         newVocab.setWord(word);
         newVocab.setMeaning(meaning);
         newVocab.setExample(example);
-        // Các trường mới cho upload file
-        newVocab.setImageUrl(imageUrl);
-        newVocab.setAudioUrl(audioUrl);
+        
+        // Gán dữ liệu nhị phân vào đối tượng
+        newVocab.setImageData(imageData);
+        newVocab.setAudioData(audioData);
 
+        // Xử lý lessonId (có thể null)
         if (lessonIdStr != null && !lessonIdStr.trim().isEmpty()) {
             try {
                 newVocab.setLessonId(Integer.parseInt(lessonIdStr));
@@ -67,9 +72,10 @@ public class AddVocabularyServlet extends HttpServlet {
             }
         }
         
+        // Gọi DAO để lưu vào CSDL
         boolean success = vocabularyDAO.addVocabulary(newVocab);
 
-        // THAY ĐỔI LẠI: Sử dụng các key message riêng biệt như cũ
+        // Đặt thông báo kết quả và chuyển hướng
         if (success) {
             session.setAttribute("successMessage_vocab", "Thêm từ vựng mới thành công!");
         } else {
@@ -78,28 +84,19 @@ public class AddVocabularyServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/admin/manage-vocabulary");
     }
     
-    private String uploadFile(HttpServletRequest request, String partName, String subDir) throws IOException, ServletException {
-        Part filePart = request.getPart(partName);
-        if (filePart == null || filePart.getSize() == 0) {
+    /**
+     * Hàm trợ giúp để đọc dữ liệu từ một Part (file upload) và chuyển thành mảng byte.
+     * @param part Đối tượng Part chứa dữ liệu file.
+     * @return Mảng byte của file, hoặc null nếu không có file hoặc file rỗng.
+     * @throws IOException
+     */
+    private byte[] getBytesFromPart(Part part) throws IOException {
+        if (part == null || part.getSize() == 0) {
             return null;
         }
-
-        String fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
-        if (fileName.isEmpty()) {
-            return null;
+        try (InputStream inputStream = part.getInputStream()) {
+            // inputStream.readAllBytes() là cách hiện đại để đọc toàn bộ stream
+            return inputStream.readAllBytes();
         }
-
-        String uniqueFileName = System.currentTimeMillis() + "_" + fileName.replaceAll("[^a-zA-Z0-9.-]", "_");
-        String applicationPath = getServletContext().getRealPath("");
-        String uploadFilePath = applicationPath + File.separator + UPLOAD_DIR + File.separator + subDir;
-
-        File uploadDir = new File(uploadFilePath);
-        if (!uploadDir.exists()) {
-            uploadDir.mkdirs();
-        }
-
-        filePart.write(uploadFilePath + File.separator + uniqueFileName);
-
-        return UPLOAD_DIR + "/" + subDir + "/" + uniqueFileName;
     }
 }

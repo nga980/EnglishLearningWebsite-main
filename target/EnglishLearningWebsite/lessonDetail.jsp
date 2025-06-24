@@ -585,24 +585,33 @@
                             <div class="list-group">
                                 <c:forEach var="vocab" items="${lessonVocabulary}">
                                     <div class="list-group-item flex-column align-items-start vocab-list-item">
-                                        <div class="d-flex w-100 justify-content-between align-items-start flex-wrap">
+                                        <div class="d-flex w-100 justify-content-between align-items-center flex-wrap">
                                             <div class="vocab-term mb-2 flex-grow-1">
                                                 <h5 class="mb-1"><strong><c:out value="${vocab.word}"/></strong></h5>
                                                 <small class="text-muted"><c:out value="${vocab.meaning}"/></small>
                                             </div>
-                                            <c:if test="${not empty vocab.audioUrl}">
+
+                                            <%-- SỬA LỖI #1: Dùng ${vocab.hasAudio} thay vì ${vocab.getHasAudio()} --%>
+                                            <c:if test="${vocab.hasAudio}">
                                                 <div class="ml-3">
-                                                    <audio controls class="audio-player" src="${pageContext.request.contextPath}/${vocab.audioUrl}"></audio>
+                                                    <%-- Trỏ src đến MediaServlet để lấy dữ liệu BLOB --%>
+                                                    <audio controls class="audio-player" src="${pageContext.request.contextPath}/media?id=${vocab.vocabId}&type=audio"></audio>
                                                 </div>
                                             </c:if>
                                         </div>
+
                                         <c:if test="${not empty vocab.example}">
                                             <div class="w-100 vocab-example">
                                                 <strong>Ví dụ:</strong> <c:out value="${vocab.example}"/>
                                             </div>
                                         </c:if>
-                                        <c:if test="${not empty vocab.imageUrl}">
-                                            <img src="${pageContext.request.contextPath}/${vocab.imageUrl}" alt="<c:out value='${vocab.word}'/>" class="vocab-image img-thumbnail mt-2" style="max-height: 120px;">
+
+                                        <%-- SỬA LỖI #1 và #2: Dùng ${vocab.hasImage} và sửa lại cú pháp thẻ img --%>
+                                        <c:if test="${vocab.hasImage}">
+                                            <img src="${pageContext.request.contextPath}/media?id=${vocab.vocabId}&type=image" 
+                                                 alt="<c:out value='${vocab.word}'/>" 
+                                                 class="vocab-image img-thumbnail mt-2" 
+                                                 style="max-height: 120px;">
                                         </c:if>
                                     </div>
                                 </c:forEach>

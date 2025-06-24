@@ -1,25 +1,23 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%-- SỬA LẠI URI CHO ĐÚNG VỚI JAKARTA EE --%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<%@ page import="java.util.List" %>
-<%@ page import="model.Vocabulary" %>
-<%@ page import="com.google.gson.Gson" %>
+<%@ page import="java.util.List, model.Vocabulary, com.google.gson.Gson" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Học với Flashcard</title>
+    <title>Học với Flashcard - English Learning</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        
         body {
             background-color: #eef2f3;
             font-family: 'Segoe UI', sans-serif;
             overflow-x: hidden;
         }
         .flashcard-wrapper {
-            min-height: calc(100vh - 150px);
+            min-height: calc(100vh - 200px); /* Điều chỉnh chiều cao */
         }
         .flashcard-container {
             perspective: 1500px;
@@ -43,6 +41,7 @@
             width: 100%;
             height: 100%;
             backface-visibility: hidden;
+            -webkit-backface-visibility: hidden; /* Tăng tương thích */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -73,17 +72,16 @@
             <c:choose>
                 <c:when test="${not empty lessonTitle}">
                     <h1 class="mb-1">Flashcard: <span class="text-primary"><c:out value="${lessonTitle}"/></span></h1>
-                    <p class="text-muted">Ôn tập từ vựng cho bài học này</p>
                 </c:when>
                 <c:otherwise>
                     <h1 class="mb-1">Ôn tập Toàn bộ Từ vựng</h1>
-                    <p class="text-muted">Nhấn vào thẻ để xem nghĩa và lật lại.</p>
                 </c:otherwise>
             </c:choose>
+            <p class="text-muted">Nhấn vào thẻ để xem nghĩa hoặc dùng phím cách. Dùng phím mũi tên để chuyển thẻ.</p>
         </div>
 
         <div class="flashcard-wrapper d-flex align-items-center">
-            <c:choose>
+             <c:choose>
                 <c:when test="${not empty vocabularyList}">
                     <div class="w-100">
                         <div class="flashcard-container" id="flashcardContainer">
@@ -92,7 +90,7 @@
                                 <div class="flashcard-face flashcard-back" id="cardBack"></div>
                             </div>
                         </div>
-                        <div class="controls text-center d-flex justify-content-between align-items-center">
+                        <div class="controls text-center d-flex justify-content-between align-items-center mt-4">
                             <button id="prevBtn" class="btn btn-outline-secondary"><i class="fas fa-arrow-left"></i> Trước</button>
                             <span id="progress" class="text-muted fw-bold"></span>
                             <button id="nextBtn" class="btn btn-primary">Tiếp <i class="fas fa-arrow-right"></i></button>
@@ -112,113 +110,78 @@
     <%
         List<Vocabulary> vocabList = (List<Vocabulary>) request.getAttribute("vocabularyList");
         Gson gson = new Gson();
-        String vocabListJson = gson.toJson(vocabList);
+        String vocabListJson = (vocabList != null) ? gson.toJson(vocabList) : "[]";
     %>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-    const vocabData = JSON.parse('<%= vocabListJson.replaceAll("\"", "\\\\\"") %>') || [];
-
-    
-    console.log("Dữ liệu từ vựng nhận được:", vocabData);
-    console.log("Số lượng từ vựng:", vocabData ? vocabData.length : 0);
-
-    if (vocabData && vocabData.length > 0) {
-        let currentIndex = 0;
-        const flashcard = document.getElementById('flashcard');
-        const cardFront = document.getElementById('cardFront');
-        const cardBack = document.getElementById('cardBack');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const progress = document.getElementById('progress');
-
-        // Kiểm tra các element có tồn tại không
-        if (!flashcard || !cardFront || !cardBack || !prevBtn || !nextBtn || !progress) {
-            console.error("Không tìm thấy các element cần thiết");
-            return;
-        }
-
-        function showCard(index) {
-            // Reset flip state
-            flashcard.classList.remove('is-flipped');
+            const vocabData = <%= vocabListJson %>;
             
-            const vocab = vocabData[index];
-            console.log("Hiển thị từ vựng index:", index, vocab);
-            
-            const contextPath = '${pageContext.request.contextPath}';
+            if (vocabData && vocabData.length > 0) {
+                let currentIndex = 0;
+                const flashcard = document.getElementById('flashcard');
+                const cardFront = document.getElementById('cardFront');
+                const cardBack = document.getElementById('cardBack');
+                const prevBtn = document.getElementById('prevBtn');
+                const nextBtn = document.getElementById('nextBtn');
+                const progress = document.getElementById('progress');
 
-            // Kiểm tra và sử dụng đúng tên thuộc tính
-            const word = (vocab.word && vocab.word.trim()) || (vocab.vocabWord && vocab.vocabWord.trim()) || (vocab.english && vocab.english.trim()) || 'Unknown';
-            const meaning = (vocab.meaning && vocab.meaning.trim()) || (vocab.vietnamese && vocab.vietnamese.trim()) || (vocab.definition && vocab.definition.trim()) || 'No meaning';
-            const example = vocab.example || vocab.exampleSentence || '';
-            const imageUrl = vocab.imageUrl || vocab.image || '';
-            const audioUrl = vocab.audioUrl || vocab.audio || '';
+                function showCard(index) {
+                    flashcard.classList.remove('is-flipped');
+                    const vocab = vocabData[index];
+                    const contextPath = '<%= request.getContextPath() %>';
 
-            // Tạo nội dung mặt trước
-            cardFront.innerHTML = '<h2 class="flashcard-word">' + vocab.word + '</h2><small class="text-muted">Nhấn để xem nghĩa</small>';
+
+                    // === SỬA LỖI HIỂN THỊ TẠI ĐÂY ===
+                    // Luôn đảm bảo các biến có giá trị trước khi sử dụng
+                    const word = vocab.word || 'N/A';
+                    const meaning = vocab.meaning || 'Chưa có nghĩa';
+                    const example = vocab.example || '';
+                    const hasImage = vocab.hasImage; // Lấy từ helper method trong model
+                    const hasAudio = vocab.hasAudio; // Lấy từ helper method trong model
                     
-                    let backHtml = '<h3 class="flashcard-meaning">' + vocab.meaning + '</h3>';
-                    if (vocab.imageUrl) {
-                        backHtml += '<img src="' + contextPath + '/' + vocab.imageUrl + '" class="flashcard-img" alt="Illustration">';
+                    // Gán nội dung mặt trước
+                    cardFront.innerHTML = '<h2 class="flashcard-word">' + word + '</h2><small class="text-muted">Nhấn để xem nghĩa</small>';
+                    
+                    // Xây dựng nội dung mặt sau
+                    let backHtml = '<h3 class="flashcard-meaning">' + meaning + '</h3>';
+                    if (vocab.hasImage) {
+                        const imageUrl = `${contextPath}/media?id=${vocab.vocabId}&type=image`;
+                        $cardBack.append($('<img>').addClass('flashcard-img').attr('src', imageUrl));
                     }
-                    if (vocab.example) {
-                        backHtml += '<p class="flashcard-example">"' + vocab.example + '"</p>';
+                    if (example) {
+                        backHtml += '<p class="flashcard-example">"' + example + '"</p>';
                     }
-                    if (vocab.audioUrl) {
-                        backHtml += '<audio controls src="' + contextPath + '/' + vocab.audioUrl + '" class="mt-2"></audio>';
+                    if (vocab.hasAudio) {
+                        const audioUrl = `${contextPath}/media?id=${vocab.vocabId}&type=audio`;
+                        $cardBack.append($('<audio>').addClass('audio-player').attr('controls', true).attr('src', audioUrl));
                     }
                     cardBack.innerHTML = backHtml;
                     
+                    // Cập nhật giao diện
                     progress.innerText = (index + 1) + ' / ' + vocabData.length;
-            prevBtn.disabled = index === 0;
-            nextBtn.disabled = index === vocabData.length - 1;
-            
-            console.log("Card front:", cardFront.innerHTML);
-            console.log("Card back:", cardBack.innerHTML);
-        }
+                    prevBtn.disabled = index === 0;
+                    nextBtn.disabled = index === vocabData.length - 1;
+                }
 
-        // Event listeners
-        flashcard.addEventListener('click', function() {
-            flashcard.classList.toggle('is-flipped');
-            console.log("Card flipped, class:", flashcard.className);
-        });
+                // Gán sự kiện
+                flashcard.addEventListener('click', () => flashcard.classList.toggle('is-flipped'));
+                prevBtn.addEventListener('click', () => { if (currentIndex > 0) showCard(--currentIndex); });
+                nextBtn.addEventListener('click', () => { if (currentIndex < vocabData.length - 1) showCard(++currentIndex); });
+                
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'ArrowLeft') prevBtn.click();
+                    else if (e.key === 'ArrowRight') nextBtn.click();
+                    else if (e.key === ' ') {
+                        e.preventDefault();
+                        flashcard.click();
+                    }
+                });
 
-        prevBtn.addEventListener('click', function() {
-            if (currentIndex > 0) {
-                currentIndex--;
+                // Hiển thị thẻ đầu tiên
                 showCard(currentIndex);
             }
         });
-
-        nextBtn.addEventListener('click', function() {
-            if (currentIndex < vocabData.length - 1) {
-                currentIndex++;
-                showCard(currentIndex);
-            }
-        });
-
-        // Keyboard navigation
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'ArrowLeft' && currentIndex > 0) {
-                currentIndex--;
-                showCard(currentIndex);
-            } else if (e.key === 'ArrowRight' && currentIndex < vocabData.length - 1) {
-                currentIndex++;
-                showCard(currentIndex);
-            } else if (e.key === ' ') {
-                e.preventDefault();
-                flashcard.classList.toggle('is-flipped');
-            }
-        });
-
-        // Hiển thị card đầu tiên
-        showCard(currentIndex);
-        console.log("Flashcard initialized successfully");
-        
-    } else {
-        console.error("Không có dữ liệu từ vựng hoặc dữ liệu rỗng");
-    }
-});
     </script>
 </body>
 </html>

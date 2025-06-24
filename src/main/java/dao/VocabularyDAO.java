@@ -20,25 +20,24 @@ import javax.naming.NamingException;
 public class VocabularyDAO {
     private static final Logger LOGGER = Logger.getLogger(VocabularyDAO.class.getName());
 
-    // Helper method để tạo Vocabulary object từ ResultSet
     private Vocabulary extractVocabularyFromResultSet(ResultSet rs) throws SQLException {
         Vocabulary vocab = new Vocabulary();
         vocab.setVocabId(rs.getInt("vocab_id"));
         vocab.setWord(rs.getString("word"));
         vocab.setMeaning(rs.getString("meaning"));
         vocab.setExample(rs.getString("example"));
-        vocab.setImageUrl(rs.getString("image_url"));
-        vocab.setAudioUrl(rs.getString("audio_url"));
+        
+        // THAY ĐỔI: Lấy dữ liệu dạng byte[]
+        vocab.setImageData(rs.getBytes("image_data"));
+        vocab.setAudioData(rs.getBytes("audio_data"));
+        
         int lessonId = rs.getInt("lesson_id");
-        if (rs.wasNull()) {
-            vocab.setLessonId(null);
-        } else {
+        if (!rs.wasNull()) {
             vocab.setLessonId(lessonId);
         }
         vocab.setCreatedAt(rs.getTimestamp("created_at"));
         return vocab;
     }
-
 
     public List<Vocabulary> getAllVocabulary() {
         List<Vocabulary> vocabList = new ArrayList<>();
@@ -95,15 +94,17 @@ public class VocabularyDAO {
     }
 
     public boolean addVocabulary(Vocabulary vocab) {
-        String query = "INSERT INTO vocabulary (word, meaning, example, image_url, audio_url, lesson_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO vocabulary (word, meaning, example, image_data, audio_data, lesson_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = conn.prepareStatement(query)) {
 
             ps.setString(1, vocab.getWord());
             ps.setString(2, vocab.getMeaning());
             ps.setString(3, vocab.getExample());
-            ps.setString(4, vocab.getImageUrl());
-            ps.setString(5, vocab.getAudioUrl());
+            
+            // THAY ĐỔI: Sử dụng setBytes cho dữ liệu BLOB
+            ps.setBytes(4, vocab.getImageData());
+            ps.setBytes(5, vocab.getAudioData());
 
             if (vocab.getLessonId() != null) {
                 ps.setInt(6, vocab.getLessonId());
@@ -112,31 +113,22 @@ public class VocabularyDAO {
             }
             ps.setTimestamp(7, new Timestamp(System.currentTimeMillis()));
 
-            int rowsAffected = ps.executeUpdate();
-            if (rowsAffected > 0) {
-                try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        vocab.setVocabId(generatedKeys.getInt(1));
-                    }
-                }
-                return true;
-            }
+            return ps.executeUpdate() > 0;
         } catch (SQLException | NamingException e) {
             LOGGER.log(Level.SEVERE, "Lỗi khi thêm từ vựng mới: " + vocab.getWord(), e);
+            return false;
         }
-        return false;
     }
 
     public boolean updateVocabulary(Vocabulary vocab) {
-        String query = "UPDATE vocabulary SET word = ?, meaning = ?, example = ?, image_url = ?, audio_url = ?, lesson_id = ? WHERE vocab_id = ?";
+        String query = "UPDATE vocabulary SET word = ?, meaning = ?, example = ?, image_data = ?, audio_data = ?, lesson_id = ? WHERE vocab_id = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
-
             ps.setString(1, vocab.getWord());
             ps.setString(2, vocab.getMeaning());
             ps.setString(3, vocab.getExample());
-            ps.setString(4, vocab.getImageUrl());
-            ps.setString(5, vocab.getAudioUrl());
+            ps.setBytes(4, vocab.getImageData());
+            ps.setBytes(5, vocab.getAudioData());
 
             if (vocab.getLessonId() != null) {
                 ps.setInt(6, vocab.getLessonId());
@@ -148,8 +140,8 @@ public class VocabularyDAO {
             return ps.executeUpdate() > 0;
         } catch (SQLException | NamingException e) {
             LOGGER.log(Level.SEVERE, "Lỗi khi cập nhật từ vựng ID: " + vocab.getVocabId(), e);
+            return false;
         }
-        return false;
     }
     
     public List<Vocabulary> searchVocabulary(String keyword) {

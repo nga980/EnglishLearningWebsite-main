@@ -308,18 +308,33 @@
                             <tbody>
                                 <c:forEach var="vocab" items="${vocabularyList}" varStatus="loop">
                                     <tr>
-                                        <td><span class="row-number">${loop.count + (currentPage - 1) * 15}</span></td>
                                         <td>
-                                            <c:if test="${not empty vocab.imageUrl}">
-                                                <img src="${pageContext.request.contextPath}/${vocab.imageUrl}" class="vocab-image" alt="<c:out value='${vocab.word}'/>">
+                                            <%-- Tính toán số thứ tự dựa trên trang hiện tại --%>
+                                            <span class="row-number">${(currentPage - 1) * 15 + loop.count}</span>
+                                        </td>
+                                        <td>
+                                            <c:if test="${vocab.hasImage}">
+                                                <img src="${pageContext.request.contextPath}/media?id=${vocab.vocabId}&type=image" 
+                                                     class="vocab-image" 
+                                                     alt="<c:out value='${vocab.word}'/>" 
+                                                     style="max-width: 100px; border-radius: 8px;">
+                                            </c:if>
+                                            <c:if test="${!vocab.hasImage}">
+                                                <span class="text-muted small">N/A</span>
                                             </c:if>
                                         </td>
                                         <td class="vocab-word"><c:out value="${vocab.word}"/></td>
                                         <td class="vocab-meaning"><c:out value="${vocab.meaning}"/></td>
                                         <td><c:out value="${vocab.example}"/></td>
                                         <td>
-                                            <c:if test="${not empty vocab.audioUrl}">
-                                                <audio controls class="audio-player" src="${pageContext.request.contextPath}/${vocab.audioUrl}"></audio>
+                                            <c:if test="${vocab.hasAudio}">
+                                                <audio controls 
+                                                       class="audio-player" 
+                                                       src="${pageContext.request.contextPath}/media?id=${vocab.vocabId}&type=audio">
+                                                </audio>
+                                            </c:if>
+                                            <c:if test="${!vocab.hasAudio}">
+                                                <span class="text-muted small">N/A</span>
                                             </c:if>
                                         </td>
                                     </tr>

@@ -19,6 +19,7 @@ controller\AddGrammarServlet.class
 controller\EditLessonFormServlet.class
 controller\AdminDashboardServlet.class
 controller\DeleteUserServlet.class
+controller\MediaServlet.class
 controller\DeleteGrammarServlet.class
 model\QuizHistoryItem.class
 controller\DeleteLessonServlet.class
