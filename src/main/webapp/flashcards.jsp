@@ -10,7 +10,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        
         body {
             background-color: #eef2f3;
             font-family: 'Segoe UI', sans-serif;
@@ -55,7 +54,7 @@
         .flashcard-front { background: white; }
         .flashcard-back { background: #f8f9fa; transform: rotateY(180deg); }
         .flashcard-word { font-size: 3.5rem; font-weight: 700; color: #2c3e50; }
-        .flashcard-meaning { font-size: 2rem; font-style: italic; color: #2980b9; }
+        .flashcard-meaning { font-size: 2rem; font-style: italic; color: #2980b9; margin-bottom: 1rem; }
         .flashcard-example { font-size: 1.1rem; color: #7f8c8d; margin-top: 1rem; }
         .flashcard-img { max-height: 120px; max-width: 100%; border-radius: 10px; margin-bottom: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .audio-player { margin-top: 1rem; height: 40px; border-radius: 50px; filter: sepia(20%) saturate(70%) grayscale(1) contrast(97%) brightness(90%); }
@@ -65,6 +64,7 @@
     </style>
 </head>
 <body>
+    
     <jsp:include page="/common/header.jsp" />
     
     <div class="container py-4">
@@ -116,6 +116,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const vocabData = <%= vocabListJson %>;
+            console.log(vocabData);
             
             if (vocabData && vocabData.length > 0) {
                 let currentIndex = 0;
@@ -125,53 +126,85 @@
                 const prevBtn = document.getElementById('prevBtn');
                 const nextBtn = document.getElementById('nextBtn');
                 const progress = document.getElementById('progress');
-
                 function showCard(index) {
                     flashcard.classList.remove('is-flipped');
                     const vocab = vocabData[index];
                     const contextPath = '<%= request.getContextPath() %>';
 
-
-                    // === SỬA LỖI HIỂN THỊ TẠI ĐÂY ===
-                    // Luôn đảm bảo các biến có giá trị trước khi sử dụng
                     const word = vocab.word || 'N/A';
                     const meaning = vocab.meaning || 'Chưa có nghĩa';
                     const example = vocab.example || '';
-                    const hasImage = vocab.hasImage; // Lấy từ helper method trong model
-                    const hasAudio = vocab.hasAudio; // Lấy từ helper method trong model
-                    
+
                     // Gán nội dung mặt trước
-                    cardFront.innerHTML = '<h2 class="flashcard-word">' + word + '</h2><small class="text-muted">Nhấn để xem nghĩa</small>';
-                    
+                    cardFront.innerHTML = '';
+                    const wordEl = document.createElement('h2');
+                    wordEl.className = 'flashcard-word';
+                    wordEl.textContent = word; 
+                    const hintEl = document.createElement('small');
+                    hintEl.className = 'text-muted';
+                    hintEl.textContent = 'Nhấn để xem nghĩa';
+                    cardFront.appendChild(wordEl);
+                    cardFront.appendChild(hintEl);
+
                     // Xây dựng nội dung mặt sau
-                    let backHtml = '<h3 class="flashcard-meaning">' + meaning + '</h3>';
+                    cardBack.innerHTML = '';
+
+                    const meaningEl = document.createElement('h3');
+                    meaningEl.className = 'flashcard-meaning';
+                    meaningEl.textContent = meaning;
+                    cardBack.appendChild(meaningEl);
+
+                    // Thêm hình ảnh nếu có
                     if (vocab.hasImage) {
-                        const imageUrl = `${contextPath}/media?id=${vocab.vocabId}&type=image`;
-                        $cardBack.append($('<img>').addClass('flashcard-img').attr('src', imageUrl));
+                        const imageUrl = contextPath + '/media?id=' + vocab.vocabId + '&type=image';
+                        const imgEl = document.createElement('img');
+                        imgEl.className = 'flashcard-img';
+                        imgEl.src = imageUrl;
+                        imgEl.alt = 'Image for ' + word;
+                        cardBack.appendChild(imgEl);
                     }
+
                     if (example) {
-                        backHtml += '<p class="flashcard-example">"' + example + '"</p>';
+                        const exampleEl = document.createElement('p');
+                        exampleEl.className = 'flashcard-example';
+                        exampleEl.textContent = example;
+                        cardBack.appendChild(exampleEl);
                     }
+
+                    // Thêm audio nếu có
                     if (vocab.hasAudio) {
-                        const audioUrl = `${contextPath}/media?id=${vocab.vocabId}&type=audio`;
-                        $cardBack.append($('<audio>').addClass('audio-player').attr('controls', true).attr('src', audioUrl));
+                        // Đảm bảo truy cập chính xác "vocab.vocabId"
+                        const audioUrl = contextPath + '/media?id=' + vocab.vocabId + '&type=audio';
+                        const audioEl = document.createElement('audio');
+                        audioEl.className = 'audio-player';
+                        audioEl.controls = true;
+                        audioEl.src = audioUrl;
+                        cardBack.appendChild(audioEl);
                     }
-                    cardBack.innerHTML = backHtml;
-                    
+
                     // Cập nhật giao diện
-                    progress.innerText = (index + 1) + ' / ' + vocabData.length;
-                    prevBtn.disabled = index === 0;
-                    nextBtn.disabled = index === vocabData.length - 1;
+                    const progress = document.getElementById('progress');
+                    const prevBtn = document.getElementById('prevBtn');
+                    const nextBtn = document.getElementById('nextBtn');
+
+                    // Sử dụng vocabData.length để lấy tổng số thẻ
+                    progress.textContent = (index + 1) + ' / ' + vocabData.length;
+
+                    // Vô hiệu hóa nút "Trước" nếu là thẻ đầu tiên
+                    prevBtn.disabled = (index === 0);
+
+                    // Vô hiệu hóa nút "Tiếp" nếu là thẻ cuối cùng
+                    nextBtn.disabled = (index === vocabData.length - 1);
                 }
 
                 // Gán sự kiện
                 flashcard.addEventListener('click', () => flashcard.classList.toggle('is-flipped'));
-                prevBtn.addEventListener('click', () => { if (currentIndex > 0) showCard(--currentIndex); });
-                nextBtn.addEventListener('click', () => { if (currentIndex < vocabData.length - 1) showCard(++currentIndex); });
+                prevBtn.addEventListener('click', () => { if (currentIndex > 0) { currentIndex--; showCard(currentIndex); } });
+                nextBtn.addEventListener('click', () => { if (currentIndex < vocabData.length - 1) { currentIndex++; showCard(currentIndex); } });
                 
                 document.addEventListener('keydown', function(e) {
-                    if (e.key === 'ArrowLeft') prevBtn.click();
-                    else if (e.key === 'ArrowRight') nextBtn.click();
+                    if (e.key === 'ArrowLeft') { e.preventDefault(); prevBtn.click(); }
+                    else if (e.key === 'ArrowRight') { e.preventDefault(); nextBtn.click(); }
                     else if (e.key === ' ') {
                         e.preventDefault();
                         flashcard.click();

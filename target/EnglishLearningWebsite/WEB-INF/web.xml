@@ -69,5 +69,12 @@
         <exception-type>java.lang.Throwable</exception-type>
         <location>/error500.jsp</location>
     </error-page>
-
+    <servlet>
+        <servlet-name>MediaServlet</servlet-name>
+        <servlet-class>controller.MediaServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>MediaServlet</servlet-name>
+        <url-pattern>/media</url-pattern>
+    </servlet-mapping>
 </web-app>

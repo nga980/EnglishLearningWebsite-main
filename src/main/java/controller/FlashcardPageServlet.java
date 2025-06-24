@@ -13,10 +13,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-/**
- * Servlet này xử lý việc hiển thị trang Flashcard.
- * Nó có thể hiển thị flashcard cho toàn bộ từ vựng hoặc chỉ cho một bài học cụ thể.
- */
 @WebServlet(name = "FlashcardPageServlet", urlPatterns = {"/flashcards"})
 public class FlashcardPageServlet extends HttpServlet {
 
@@ -37,24 +33,24 @@ public class FlashcardPageServlet extends HttpServlet {
         List<Vocabulary> vocabList;
 
         if (lessonIdStr != null && !lessonIdStr.trim().isEmpty()) {
-            // Trường hợp học theo bài
             try {
                 int lessonId = Integer.parseInt(lessonIdStr);
-                vocabList = vocabularyDAO.getVocabularyByLessonId(lessonId);
+                // --- UPDATE: Gọi phương thức đã tối ưu hóa ---
+                vocabList = vocabularyDAO.getVocabularyByLessonIdForFlashcards(lessonId);
                 Lesson lesson = lessonDAO.getLessonById(lessonId);
                 if (lesson != null) {
                     request.setAttribute("lessonTitle", lesson.getTitle());
                 }
             } catch (NumberFormatException e) {
-                // Nếu lessonId không hợp lệ, tải tất cả từ vựng để tránh lỗi trang trắng
-                vocabList = vocabularyDAO.getAllVocabulary();
+                // ...
+                // --- UPDATE: Gọi phương thức đã tối ưu hóa ---
+                vocabList = vocabularyDAO.getAllVocabularyForFlashcards();
             }
         } else {
-            // Trường hợp ôn tập chung
-            vocabList = vocabularyDAO.getAllVocabulary();
+            // --- UPDATE: Gọi phương thức đã tối ưu hóa ---
+            vocabList = vocabularyDAO.getAllVocabularyForFlashcards();
         }
         
-        // Xáo trộn danh sách để mỗi lần học là một trải nghiệm mới
         if (vocabList != null) {
             Collections.shuffle(vocabList);
         }

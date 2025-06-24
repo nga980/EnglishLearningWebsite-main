@@ -1,8 +1,6 @@
-// File: src/main/java/model/Vocabulary.java
 package model;
 
 import java.sql.Timestamp;
-import java.util.Base64; // Dùng để hiển thị ảnh tạm thời nếu cần
 
 public class Vocabulary {
     private int vocabId;
@@ -10,15 +8,21 @@ public class Vocabulary {
     private String meaning;
     private String example;
     private Integer lessonId;
-    private byte[] imageData; // THAY ĐỔI
-    private byte[] audioData; // THAY ĐỔI
     private Timestamp createdAt;
 
-    // Constructors, Getters, and Setters
+    // Dữ liệu media (chỉ được tải khi cần)
+    private byte[] imageData;
+    private byte[] audioData;
+    
+    // --- NEW: Thêm các trường boolean để tối ưu hóa ---
+    // Các trường này sẽ được DAO thiết lập khi tải danh sách cho flashcard
+    private boolean hasImage;
+    private boolean hasAudio;
 
     public Vocabulary() {
     }
-    public int getVocabId() {    
+
+    public int getVocabId() {
         return vocabId;
     }
 
@@ -58,6 +62,14 @@ public class Vocabulary {
         this.lessonId = lessonId;
     }
 
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public byte[] getImageData() {
         return imageData;
     }
@@ -74,22 +86,20 @@ public class Vocabulary {
         this.audioData = audioData;
     }
 
-    public Timestamp getCreatedAt() {
-        return createdAt;
+    public boolean isHasImage() {
+        return hasImage;
     }
 
-    // Getters and Setters đã cập nhật
-    public void setCreatedAt(Timestamp createdAt) {    
-        this.createdAt = createdAt;
+    public void setHasImage(boolean hasImage) {
+        this.hasImage = hasImage;
     }
 
-    // Helper method để kiểm tra xem có ảnh không (dùng trong JSP)
-    public boolean getHasImage() {
-        return this.imageData != null && this.imageData.length > 0;
+    public boolean isHasAudio() {
+        return hasAudio;
     }
 
-    // Helper method để kiểm tra xem có audio không
-    public boolean getHasAudio() {
-        return this.audioData != null && this.audioData.length > 0;
+    public void setHasAudio(boolean hasAudio) {
+        this.hasAudio = hasAudio;
     }
+
 }
