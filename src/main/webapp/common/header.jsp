@@ -166,6 +166,7 @@
                             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
                                 <a class="dropdown-item" href="${pageContext.request.contextPath}/profile"><i class="fas fa-user"></i> Hồ sơ</a>
                                 <a class="dropdown-item" href="${pageContext.request.contextPath}/quiz-history"><i class="fas fa-history"></i> Lịch sử học tập</a>
+                                <a class="dropdown-item" href="${pageContext.request.contextPath}/grammar-history"><i class="fas fa-history"></i> Lịch sử bài tập Ngữ pháp</a>
                                 <% if ("ADMIN".equals(loggedInUser.getRole())) { %>
                                     <div class="dropdown-divider"></div>
                                     <a class="dropdown-item" href="${pageContext.request.contextPath}/admin/dashboard"><i class="fas fa-cog"></i> Trang quản trị</a>

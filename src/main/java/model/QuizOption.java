@@ -6,18 +6,9 @@ public class QuizOption {
     private String optionText;
     private boolean isCorrect;
 
-    // Constructors
     public QuizOption() {
     }
 
-    public QuizOption(int optionId, int questionId, String optionText, boolean isCorrect) {
-        this.optionId = optionId;
-        this.questionId = questionId;
-        this.optionText = optionText;
-        this.isCorrect = isCorrect;
-    }
-
-    // Getters and Setters
     public int getOptionId() {
         return optionId;
     }
@@ -49,9 +40,5 @@ public class QuizOption {
     public void setIsCorrect(boolean isCorrect) {
         this.isCorrect = isCorrect;
     }
-
-    @Override
-    public String toString() {
-        return "QuizOption{" + "optionId=" + optionId + ", optionText='" + optionText + '\'' + ", isCorrect=" + isCorrect + '}';
-    }
+     
 }

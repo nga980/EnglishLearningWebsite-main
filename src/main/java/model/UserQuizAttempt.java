@@ -2,12 +2,7 @@ package model;
 
 import java.sql.Timestamp;
 
-/**
- * Lớp này đại diện cho một lần trả lời câu hỏi của người dùng,
- * tương ứng với bảng 'user_quiz_attempts' trong CSDL.
- */
 public class UserQuizAttempt {
-
     private int attemptId;
     private int userId;
     private int quizQuestionId;
@@ -17,8 +12,10 @@ public class UserQuizAttempt {
 
     // Constructors
     public UserQuizAttempt() {
+        // Constructor không tham số, bắt buộc phải có để sử dụng setter
     }
-
+    
+    // (Optional) Bạn có thể giữ lại constructor này nếu muốn
     public UserQuizAttempt(int userId, int quizQuestionId, int selectedOptionId, boolean isAnswerCorrect) {
         this.userId = userId;
         this.quizQuestionId = quizQuestionId;
@@ -59,7 +56,8 @@ public class UserQuizAttempt {
         this.selectedOptionId = selectedOptionId;
     }
 
-    public boolean isIsAnswerCorrect() {
+    // Đảm bảo tên getter là isAnswerCorrect() để khớp với thuộc tính
+    public boolean isAnswerCorrect() {
         return isAnswerCorrect;
     }
 

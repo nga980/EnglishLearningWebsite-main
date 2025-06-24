@@ -317,7 +317,7 @@
                     <div class="quiz-question" data-question="${loop.count}">
                         <div class="question-text">
                             <span class="question-number">${loop.count}</span>
-                            <c:out value="${question.questionText}"/>
+                            <c:out value="${question.questionText}" escapeXml="false"/>
                         </div>
                         
                         <c:forEach var="option" items="${question.options}">

@@ -1,7 +1,7 @@
-package controller; // Hoặc package controller của bạn
+package controller; 
 
-import dao.LessonDAO;   // Hoặc package dao của bạn
-import model.Lesson;    // Hoặc package model của bạn
+import dao.LessonDAO;   
+import model.Lesson;    
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;

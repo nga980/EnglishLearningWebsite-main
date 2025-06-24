@@ -591,7 +591,6 @@
                                                 <small class="text-muted"><c:out value="${vocab.meaning}"/></small>
                                             </div>
 
-                                            <%-- SỬA LỖI #1: Dùng ${vocab.hasAudio} thay vì ${vocab.getHasAudio()} --%>
                                             <c:if test="${vocab.hasAudio}">
                                                 <div class="ml-3">
                                                     <%-- Trỏ src đến MediaServlet để lấy dữ liệu BLOB --%>
@@ -606,7 +605,6 @@
                                             </div>
                                         </c:if>
 
-                                        <%-- SỬA LỖI #1 và #2: Dùng ${vocab.hasImage} và sửa lại cú pháp thẻ img --%>
                                         <c:if test="${vocab.hasImage}">
                                             <img src="${pageContext.request.contextPath}/media?id=${vocab.vocabId}&type=image" 
                                                  alt="<c:out value='${vocab.word}'/>" 

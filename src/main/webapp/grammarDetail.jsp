@@ -414,6 +414,43 @@
                             </div>
                         </div>
                     </c:if>
+                    <c:if test="${not empty exerciseList}">
+                        <div class="exercise-section">
+                            <h4><i class="fas fa-pencil-ruler"></i> Bài tập củng cố</h4>
+                            <form action="${pageContext.request.contextPath}/submit-grammar-exercise" method="POST">
+                                <input type="hidden" name="grammarTopicId" value="${grammarTopic.topicId}">
+                                
+                                <c:forEach var="question" items="${exerciseList}" varStatus="loop">
+                                    <div class="mb-4">
+                                        <div class="exercise-question">
+                                            <strong>Câu ${loop.count}:</strong>
+                                            <c:out value="${question.questionText}" escapeXml="false"/>
+                                        </div>
+                                        <div class="exercise-options pl-4">
+                                            <c:forEach var="option" items="${question.options}">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" 
+                                                           name="question_${question.questionId}" 
+                                                           id="option_${option.optionId}" 
+                                                           value="${option.optionId}" required>
+                                                    <label class="form-check-label" for="option_${option.optionId}">
+                                                        <c:out value="${option.optionText}"/>
+                                                    </label>
+                                                </div>
+                                            </c:forEach>
+                                        </div>
+                                    </div>
+                                </c:forEach>
+                                
+                                <hr>
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="fas fa-check-circle"></i> Nộp bài
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </c:if>
 
                 </c:when>
                 <c:otherwise>

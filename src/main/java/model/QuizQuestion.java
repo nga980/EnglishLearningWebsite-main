@@ -1,28 +1,17 @@
-package model; // Hoặc package model của bạn
+package model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class QuizQuestion {
     private int questionId;
     private int lessonId;
+    private int grammarTopicId; // <-- THÊM DÒNG NÀY
     private String questionText;
-    private List<QuizOption> options; // Danh sách các lựa chọn cho câu hỏi này
+    private List<QuizOption> options;
 
-    // Constructors
     public QuizQuestion() {
-        // Khởi tạo danh sách options để tránh NullPointerException
-        this.options = new ArrayList<>();
     }
 
-    public QuizQuestion(int questionId, int lessonId, String questionText) {
-        this.questionId = questionId;
-        this.lessonId = lessonId;
-        this.questionText = questionText;
-        this.options = new ArrayList<>();
-    }
-
-    // Getters and Setters
     public int getQuestionId() {
         return questionId;
     }
@@ -37,6 +26,14 @@ public class QuizQuestion {
 
     public void setLessonId(int lessonId) {
         this.lessonId = lessonId;
+    }
+
+    public int getGrammarTopicId() {
+        return grammarTopicId;
+    }
+
+    public void setGrammarTopicId(int grammarTopicId) {
+        this.grammarTopicId = grammarTopicId;
     }
 
     public String getQuestionText() {
@@ -55,16 +52,5 @@ public class QuizQuestion {
         this.options = options;
     }
 
-    // Helper method để thêm một lựa chọn vào danh sách
-    public void addOption(QuizOption option) {
-        if (this.options == null) {
-            this.options = new ArrayList<>();
-        }
-        this.options.add(option);
-    }
-
-    @Override
-    public String toString() {
-        return "QuizQuestion{" + "questionId=" + questionId + ", lessonId=" + lessonId + ", questionText='" + questionText + '\'' + ", options=" + options.size() + '}';
-    }
+    
 }

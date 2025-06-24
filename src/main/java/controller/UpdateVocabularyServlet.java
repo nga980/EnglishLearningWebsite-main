@@ -58,19 +58,25 @@ public class UpdateVocabularyServlet extends HttpServlet {
             return;
         }
 
-        byte[] newImageData = getBytesFromPart(request.getPart("imageFile"));
-        byte[] newAudioData = getBytesFromPart(request.getPart("audioFile"));
-
+        // Cập nhật các trường văn bản
         vocabToUpdate.setWord(word);
         vocabToUpdate.setMeaning(meaning);
         vocabToUpdate.setExample(example);
 
-        if (newImageData != null) {
+        // === LOGIC SỬA LỖI QUAN TRỌNG ===
+        // Chỉ cập nhật dữ liệu media nếu có file mới được tải lên và file đó có nội dung.
+        
+        byte[] newImageData = getBytesFromPart(request.getPart("imageFile"));
+        if (newImageData != null && newImageData.length > 0) {
             vocabToUpdate.setImageData(newImageData);
         }
-        if (newAudioData != null) {
+        // Nếu không, giữ nguyên dữ liệu ảnh cũ trong vocabToUpdate
+
+        byte[] newAudioData = getBytesFromPart(request.getPart("audioFile"));
+        if (newAudioData != null && newAudioData.length > 0) {
             vocabToUpdate.setAudioData(newAudioData);
         }
+        // Nếu không, giữ nguyên dữ liệu audio cũ
         
         if (lessonIdStr != null && !lessonIdStr.trim().isEmpty()) {
             try {

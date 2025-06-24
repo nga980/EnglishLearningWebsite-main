@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <!DOCTYPE html>
 <html>
@@ -315,9 +315,9 @@
                                         <td>
                                             <c:if test="${vocab.hasImage}">
                                                 <img src="${pageContext.request.contextPath}/media?id=${vocab.vocabId}&type=image" 
-                                                     class="vocab-image" 
-                                                     alt="<c:out value='${vocab.word}'/>" 
-                                                     style="max-width: 100px; border-radius: 8px;">
+                                                 alt="<c:out value='${vocab.word}'/>" 
+                                                 class="vocab-image img-thumbnail mt-2" 
+                                                 style="max-height: 120px;">
                                             </c:if>
                                             <c:if test="${!vocab.hasImage}">
                                                 <span class="text-muted small">N/A</span>
@@ -328,8 +328,7 @@
                                         <td><c:out value="${vocab.example}"/></td>
                                         <td>
                                             <c:if test="${vocab.hasAudio}">
-                                                <audio controls 
-                                                       class="audio-player" 
+                                                <audio controls class="audio-player" 
                                                        src="${pageContext.request.contextPath}/media?id=${vocab.vocabId}&type=audio">
                                                 </audio>
                                             </c:if>
@@ -372,5 +371,8 @@
     </div>
     <jsp:include page="/common/footer.jsp" />
     
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
 </body>
 </html>

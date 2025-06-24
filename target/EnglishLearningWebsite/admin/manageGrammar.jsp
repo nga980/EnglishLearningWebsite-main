@@ -608,6 +608,9 @@
                                                    class="btn action-btn btn-edit">
                                                     <i class="fas fa-edit mr-1"></i>Sửa
                                                 </a>
+                                                <a href="${pageContext.request.contextPath}/admin/manage-grammar-exercises?grammarTopicId=${topic.topicId}" class="btn btn-info btn-sm">
+                                                    <i class="fas fa-tasks"></i> Bài tập
+                                                </a>   
                                                 <a href="${pageContext.request.contextPath}/admin/delete-grammar?topicId=${topic.topicId}" 
                                                    class="btn action-btn btn-delete" 
                                                    onclick="return confirmDelete('${topic.title}');">

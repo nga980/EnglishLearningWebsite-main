@@ -3,8 +3,12 @@ controller\FlashcardPageServlet.class
 controller\QuizHistoryServlet.class
 controller\ForgotPasswordServlet.class
 controller\ChangePasswordServlet.class
+controller\SubmitGrammarExerciseServlet.class
 utils\PasswordUtils.class
+model\GrammarExerciseHistoryItem.class
 dao\UserDAO.class
+controller\AddGrammarExerciseServlet.class
+controller\DeleteGrammarExerciseServlet.class
 model\User.class
 model\GrammarTopic.class
 controller\UpdateVocabularyServlet.class
@@ -32,8 +36,10 @@ controller\AddLessonServlet.class
 utils\SecurityUtils.class
 controller\RegisterServlet.class
 controller\AddQuizQuestionServlet.class
+controller\GrammarExerciseHistoryServlet.class
 dao\GrammarTopicDAO.class
 com\mycompany\englishlearningwebsite\resources\JakartaEE11Resource.class
+controller\ManageGrammarExercisesServlet.class
 controller\PrivacyPolicyServlet.class
 controller\ManageUsersServlet.class
 utils\DBContext.class
@@ -49,6 +55,8 @@ controller\ProfileServlet.class
 model\UserQuizAttempt.class
 model\QuizResultDetail.class
 controller\DeleteQuizQuestionServlet.class
+controller\MediaUploadServlet.class
+controller\EditGrammarExerciseFormServlet.class
 controller\LoginServlet.class
 controller\EditQuizQuestionFormServlet.class
 controller\ManageLessonsServlet.class
@@ -62,6 +70,7 @@ controller\UpdateLessonServlet.class
 controller\FaqServlet.class
 controller\ManageQuizServlet.class
 controller\AddVocabularyServlet.class
+controller\UpdateGrammarExerciseServlet.class
 controller\ManageVocabularyServlet.class
 controller\HomeServlet.class
 controller\UpdateGrammarServlet.class

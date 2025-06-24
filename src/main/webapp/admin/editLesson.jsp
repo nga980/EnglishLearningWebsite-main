@@ -407,29 +407,45 @@
         // Initialize TinyMCE
         tinymce.init({
             selector: 'textarea#lessonContent',
-            height: 400,
-            menubar: false,
+            height: 500,
             plugins: [
-                'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-                'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                'insertdatetime', 'media', 'table', 'help', 'wordcount', 'paste'
+                'advlist', 'autolink', 'lists', 'link', 'image', 'media', 'table', 'code', 'help', 'wordcount'
             ],
             toolbar: 'undo redo | blocks | ' +
-                'bold italic forecolor backcolor | alignleft aligncenter ' +
-                'alignright alignjustify | bullist numlist outdent indent | ' +
-                'removeformat | link image media | fullscreen code | help',
-            content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 1.6; }',
+                     'bold italic forecolor backcolor | alignleft aligncenter ' +
+                     'alignright alignjustify | bullist numlist outdent indent | ' +
+                     'removeformat | link image media | code | help',
+            content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 16px; line-height: 1.6; }',
             branding: false,
-            resize: true,
-            paste_data_images: true,
-            image_advtab: true,
-            link_default_target: '_blank',
-            setup: function (editor) {
-                editor.on('change', function () {
-                    editor.save();
-                });
+            
+            // Cấu hình cho phép upload file từ máy tính
+            images_upload_url: '${pageContext.request.contextPath}/admin/upload-media',
+            automatic_uploads: true,
+            file_picker_types: 'image media',
+            
+            // Hàm callback để xử lý việc chọn file
+            file_picker_callback: function (cb, value, meta) {
+                var input = document.createElement('input');
+                input.setAttribute('type', 'file');
+                input.setAttribute('accept', meta.filetype === 'image' ? 'image/*' : 'video/*,audio/*');
+
+                input.onchange = function () {
+                    var file = this.files[0];
+                    var reader = new FileReader();
+                    reader.onload = function () {
+                        var id = 'blobid' + (new Date()).getTime();
+                        var blobCache = tinymce.activeEditor.editorUpload.blobCache;
+                        var base64 = reader.result.split(',')[1];
+                        var blobInfo = blobCache.create(id, file, base64);
+                        blobCache.add(blobInfo);
+                        cb(blobInfo.blobUri(), { title: file.name });
+                    };
+                    reader.readAsDataURL(file);
+                };
+                input.click();
             }
         });
+
 
         // Confirm before leaving page with unsaved changes
         let formChanged = false;

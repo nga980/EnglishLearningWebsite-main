@@ -47,7 +47,9 @@ public class VocabularyListServlet extends HttpServlet {
             currentPage = 1;
         }
 
-        List<Vocabulary> vocabularyList = vocabularyDAO.getVocabularyByPage(currentPage, PAGE_SIZE);
+        // === THAY ĐỔI TỐI ƯU HÓA TẠI ĐÂY ===
+        // Gọi phương thức mới để chỉ tải cờ media, giúp trang nhanh hơn.
+        List<Vocabulary> vocabularyList = vocabularyDAO.getVocabularyByPageForFlashcards(currentPage, PAGE_SIZE);
 
         request.setAttribute("vocabularyList", vocabularyList);
         request.setAttribute("currentPage", currentPage);

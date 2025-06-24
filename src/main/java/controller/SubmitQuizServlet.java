@@ -4,7 +4,7 @@ import dao.QuizDAO;
 import model.QuizOption;
 import model.QuizQuestion;
 import model.User;
-import model.UserQuizAttempt; // THÊM IMPORT NÀY
+import model.UserQuizAttempt;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,14 +58,15 @@ public class SubmitQuizServlet extends HttpServlet {
 
                 String selectedOptionIdStr = request.getParameter("question_" + question.getQuestionId());
                 boolean isAnswerCorrect = false;
-                int selectedOptionId = -1; // -1 nếu không trả lời
+                int selectedOptionId = -1;
 
                 if (selectedOptionIdStr != null) {
                     selectedOptionId = Integer.parseInt(selectedOptionIdStr);
                     resultDetail.setSelectedOptionId(selectedOptionId);
                     
                     for (QuizOption option : question.getOptions()) {
-                        if (option.isIsCorrect() && option.getOptionId() == selectedOptionId) {
+                        // SỬA LỖI 1: Gọi đúng tên phương thức isCorrect()
+                        if (option.isIsCorrect()&& option.getOptionId() == selectedOptionId) {
                             score++;
                             isAnswerCorrect = true;
                             break;
@@ -77,17 +78,16 @@ public class SubmitQuizServlet extends HttpServlet {
                     resultDetail.setWasCorrect(false);
                 }
                 
-                // === PHẦN QUAN TRỌNG: LƯU LẠI KẾT QUẢ ===
-                if (selectedOptionId != -1) { // Chỉ lưu nếu người dùng có trả lời
-                    UserQuizAttempt attempt = new UserQuizAttempt(
-                        loggedInUser.getUserId(), 
-                        question.getQuestionId(), 
-                        selectedOptionId, 
-                        isAnswerCorrect
-                    );
-                    quizDAO.saveUserAttempt(attempt); // Gọi DAO để lưu
+                if (selectedOptionId != -1) {
+                    // SỬA LỖI 2: Dùng constructor mặc định và các setter
+                    UserQuizAttempt attempt = new UserQuizAttempt();
+                    attempt.setUserId(loggedInUser.getUserId());
+                    attempt.setQuizQuestionId(question.getQuestionId());
+                    attempt.setSelectedOptionId(selectedOptionId);
+                    attempt.setIsAnswerCorrect(isAnswerCorrect);
+                    
+                    quizDAO.saveUserAttempt(attempt);
                 }
-                // ===========================================
                 
                 detailedResults.add(resultDetail);
             }

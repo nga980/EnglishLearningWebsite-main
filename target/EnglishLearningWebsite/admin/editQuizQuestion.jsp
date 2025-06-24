@@ -15,6 +15,9 @@
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- TinyMCE -->
+    <script src="https://cdn.tiny.cloud/1/vn0hiraxxi1kjrfnyjmwv5qey0src7qravqh77cccznwy44x/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    
     
     <!-- Custom Admin Styles -->
     <style>
@@ -470,107 +473,44 @@
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
 
     <script>
-        $(document).ready(function() {
-            // Initialize feather icons
-            feather.replace();
+         // Cấu hình TinyMCE với chức năng upload file
+        tinymce.init({
+            selector: 'textarea#questionText',
+            height: 350,
+            plugins: 'advlist lists link image media table code help wordcount',
+            toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | link image media | code',
+            
+            images_upload_url: '${pageContext.request.contextPath}/admin/upload-media',
+            automatic_uploads: true,
+            file_picker_types: 'image media',
+            
+            file_picker_callback: function (cb, value, meta) {
+                var input = document.createElement('input');
+                input.setAttribute('type', 'file');
+                input.setAttribute('accept', meta.filetype === 'image' ? 'image/*' : 'video/*,audio/*');
 
-            // Question text preview
-            $('#questionText').on('input', function() {
-                const questionText = $(this).val();
-                $('#questionPreview').text(questionText || 'Nhập nội dung câu hỏi để xem trước...');
-            });
-
-            // Radio button change handler
-            $('input[name="correctOptionIndex"]').on('change', function() {
-                // Remove correct-answer class from all option rows
-                $('.option-row').removeClass('correct-answer');
-                
-                // Add correct-answer class to selected option row
-                const selectedIndex = $(this).val();
-                $(`.option-row[data-option-index="${selectedIndex}"]`).addClass('correct-answer');
-            });
-
-            // Option input validation
-            $('.option-input').on('input', function() {
-                const $this = $(this);
-                if ($this.val().trim() === '') {
-                    $this.addClass('is-invalid');
-                } else {
-                    $this.removeClass('is-invalid');
-                }
-            });
-
-            // Form submission with loading
-            $('#editQuizForm').on('submit', function(e) {
-                // Validate form
-                let isValid = true;
-                
-                // Check question text
-                if ($('#questionText').val().trim() === '') {
-                    $('#questionText').addClass('is-invalid');
-                    isValid = false;
-                } else {
-                    $('#questionText').removeClass('is-invalid');
-                }
-                
-                // Check option texts
-                $('.option-input').each(function() {
-                    if ($(this).val().trim() === '') {
-                        $(this).addClass('is-invalid');
-                        isValid = false;
-                    } else {
-                        $(this).removeClass('is-invalid');
-                    }
-                });
-                
-                // Check if correct answer is selected
-                if (!$('input[name="correctOptionIndex"]:checked').length) {
-                    alert('Vui lòng chọn đáp án đúng!');
-                    isValid = false;
-                }
-                
-                if (!isValid) {
-                    e.preventDefault();
-                    $('html, body').animate({
-                        scrollTop: $('.is-invalid').first().offset().top - 100
-                    }, 500);
-                    return false;
-                }
-                
-                // Show loading overlay
-                $('#loadingOverlay').show();
-            });
-
-            // Smooth scroll to top on page load
-            $('html, body').animate({scrollTop: 0}, 300);
-
-            // Auto-resize textarea
-            function autoResize(textarea) {
-                textarea.style.height = 'auto';
-                textarea.style.height = (textarea.scrollHeight) + 'px';
+                input.onchange = function () {
+                    var file = this.files[0];
+                    var reader = new FileReader();
+                    reader.onload = function () {
+                        var id = 'blobid' + (new Date()).getTime();
+                        var blobCache = tinymce.activeEditor.editorUpload.blobCache;
+                        var base64 = reader.result.split(',')[1];
+                        var blobInfo = blobCache.create(id, file, base64);
+                        blobCache.add(blobInfo);
+                        cb(blobInfo.blobUri(), { title: file.name });
+                    };
+                    reader.readAsDataURL(file);
+                };
+                input.click();
             }
+        });
 
-            $('#questionText').on('input', function() {
-                autoResize(this);
-            });
-
-            // Initialize textarea height
-            autoResize(document.getElementById('questionText'));
-
-            // Keyboard shortcuts
-            $(document).keydown(function(e) {
-                // Ctrl+S to save
-                if (e.ctrlKey && e.which === 83) {
-                    e.preventDefault();
-                    $('#editQuizForm').submit();
-                }
-                
-                // Escape to cancel
-                if (e.which === 27) {
-                    if (confirm('Bạn có chắc chắn muốn hủy bỏ các thay đổi?')) {
-                        window.location.href = '${pageContext.request.contextPath}/admin/manage-quiz?lessonId=${questionToEdit.lessonId}';
-                    }
-                }
+        // Form validation
+        $(document).ready(function() {
+            $('#editQuizForm').on('submit', function() {
+                // Trigger save to ensure textarea has the latest content from TinyMCE
+                tinymce.triggerSave();
             });
         });
     </script>

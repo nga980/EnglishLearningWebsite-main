@@ -14,6 +14,9 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/admin/css/admin-style.css">
+    <!-- TinyMCE -->
+    <script src="https://cdn.tiny.cloud/1/vn0hiraxxi1kjrfnyjmwv5qey0src7qravqh77cccznwy44x/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    
     <style>
         :root {
             --primary-color: #007bff;
@@ -203,20 +206,22 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            margin-right: 15px;
+            flex-shrink: 0;
         }
 
         .radio-wrapper {
             display: flex;
             align-items: center;
-            justify-content: center;
-            flex-direction: column;
+            flex-shrink: 0;
+            min-width: 70px;
+            margin-left: 10px; /* MODIFICATION: Added to increase space from input field */
         }
 
         .custom-radio {
             width: 20px;
             height: 20px;
-            margin-bottom: 5px;
+            margin-right: 5px;
+            margin-bottom: 0;
         }
 
         .empty-state {
@@ -292,10 +297,20 @@
                 padding: 10px;
             }
 
+            .option-row .d-flex {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
             .option-label {
-                width: 30px;
-                height: 30px;
+                width: 35px;
+                height: 35px;
                 font-size: 0.9rem;
+                flex-shrink: 0;
+            }
+
+            .radio-wrapper {
+                min-width: auto; /* This override will still inherit margin-left: 10px */
             }
 
             .form-section {
@@ -459,80 +474,64 @@
 
                 <!-- Option A -->
                 <div class="option-row">
-                    <div class="row align-items-center">
-                        <div class="col-auto">
-                            <div class="option-label">A</div>
-                        </div>
-                        <div class="col">
+                    <div class="d-flex align-items-center">
+                        <div class="option-label mr-3">A</div>
+                        <div class="flex-grow-1 mr-3">
                             <input type="text" class="form-control" name="optionText" 
                                    placeholder="Nội dung lựa chọn A" required>
                         </div>
-                        <div class="col-auto">
-                            <div class="radio-wrapper">
-                                <input class="form-check-input custom-radio" type="radio" 
-                                       name="correctOption" id="correctA" value="0" required>
-                                <label class="form-check-label small" for="correctA">Đúng</label>
-                            </div>
+                        <div class="radio-wrapper">
+                            <input class="form-check-input custom-radio" type="radio" 
+                                   name="correctOption" id="correctA" value="0" required>
+                            <label class="form-check-label small" for="correctA">Đúng</label>
                         </div>
                     </div>
                 </div>
 
                 <!-- Option B -->
                 <div class="option-row">
-                    <div class="row align-items-center">
-                        <div class="col-auto">
-                            <div class="option-label">B</div>
-                        </div>
-                        <div class="col">
+                    <div class="d-flex align-items-center">
+                        <div class="option-label mr-3">B</div>
+                        <div class="flex-grow-1 mr-3">
                             <input type="text" class="form-control" name="optionText" 
                                    placeholder="Nội dung lựa chọn B" required>
                         </div>
-                        <div class="col-auto">
-                            <div class="radio-wrapper">
-                                <input class="form-check-input custom-radio" type="radio" 
-                                       name="correctOption" id="correctB" value="1">
-                                <label class="form-check-label small" for="correctB">Đúng</label>
-                            </div>
+                        <div class="radio-wrapper">
+                            <input class="form-check-input custom-radio" type="radio" 
+                                   name="correctOption" id="correctB" value="1">
+                            <label class="form-check-label small" for="correctB">Đúng</label>
                         </div>
                     </div>
                 </div>
 
                 <!-- Option C -->
                 <div class="option-row">
-                    <div class="row align-items-center">
-                        <div class="col-auto">
-                            <div class="option-label">C</div>
-                        </div>
-                        <div class="col">
+                    <div class="d-flex align-items-center">
+                        <div class="option-label mr-3">C</div>
+                        <div class="flex-grow-1 mr-3">
                             <input type="text" class="form-control" name="optionText" 
                                    placeholder="Nội dung lựa chọn C">
                         </div>
-                        <div class="col-auto">
-                            <div class="radio-wrapper">
-                                <input class="form-check-input custom-radio" type="radio" 
-                                       name="correctOption" id="correctC" value="2">
-                                <label class="form-check-label small" for="correctC">Đúng</label>
-                            </div>
+                        <div class="radio-wrapper">
+                            <input class="form-check-input custom-radio" type="radio" 
+                                   name="correctOption" id="correctC" value="2">
+                            <label class="form-check-label small" for="correctC">Đúng</label>
                         </div>
                     </div>
                 </div>
 
                 <!-- Option D -->
                 <div class="option-row">
-                    <div class="row align-items-center">
-                        <div class="col-auto">
-                            <div class="option-label">D</div>
-                        </div>
-                        <div class="col">
+                    <div class="d-flex align-items-center">
+                        <div class="option-label mr-3">D</div>
+                        <div class="flex-grow-1 mr-3">
                             <input type="text" class="form-control" name="optionText" 
                                    placeholder="Nội dung lựa chọn D">
                         </div>
-                        <div class="col-auto">
-                            <div class="radio-wrapper">
-                                <input class="form-check-input custom-radio" type="radio" 
-                                       name="correctOption" id="correctD" value="3">
-                                <label class="form-check-label small" for="correctD">Đúng</label>
-                            </div>
+                        <div class="radio-wrapper">
+                            <input class="form-check-input custom-radio" type="radio" 
+                                   name="correctOption" id="correctD" value="3">
+                            <label class="form-check-label small" for="correctD">Đúng</label>
                         </div>
                     </div>
                 </div>
@@ -557,7 +556,7 @@
                         Xác nhận xóa
                     </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                        <span aria-hidden="true">×</span>
                     </button>
                 </div>
                 <div class="modal-body">
@@ -575,66 +574,97 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
     <script>
-        // Delete confirmation function
+        // Hàm xác nhận xóa câu hỏi
         function confirmDelete(questionId, lessonId) {
-            const deleteUrl = '${pageContext.request.contextPath}/admin/delete-quiz-question?questionId=' + questionId + '&lessonId=' + lessonId;
-            $('#confirmDeleteBtn').attr('href', deleteUrl);
+            $('#confirmDeleteBtn').attr('href', 
+                '${pageContext.request.contextPath}/admin/delete-quiz-question?questionId=' + questionId + '&lessonId=' + lessonId
+            );
             $('#deleteModal').modal('show');
         }
 
-        // Form validation and enhancement
+        // Cấu hình TinyMCE với chức năng upload file
+        tinymce.init({
+            selector: 'textarea#questionText',
+            height: 350,
+            plugins: 'advlist lists link image media table code help wordcount',
+            toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | link image media | code',
+            
+            // Đảm bảo có servlet xử lý upload tại URL này
+            images_upload_url: '${pageContext.request.contextPath}/admin/upload-media',
+            automatic_uploads: true,
+            file_picker_types: 'image media',
+            
+            file_picker_callback: function (cb, value, meta) {
+                var input = document.createElement('input');
+                input.setAttribute('type', 'file');
+                input.setAttribute('accept', meta.filetype === 'image' ? 'image/*' : 'video/*,audio/*');
+
+                input.onchange = function () {
+                    var file = this.files[0];
+                    var reader = new FileReader();
+                    reader.onload = function () {
+                        var id = 'blobid' + (new Date()).getTime();
+                        var blobCache = tinymce.activeEditor.editorUpload.blobCache;
+                        var base64 = reader.result.split(',')[1];
+                        var blobInfo = blobCache.create(id, file, base64);
+                        blobCache.add(blobInfo);
+                        cb(blobInfo.blobUri(), { title: file.name });
+                    };
+                    reader.readAsDataURL(file);
+                };
+                input.click();
+            }
+        });
+
+        // Script để đảm bảo TinyMCE lưu nội dung trước khi submit
         $(document).ready(function() {
-            // Add smooth animations
-            $('.fade-in').each(function(index) {
-                $(this).delay(100 * index).queue(function(next) {
-                    $(this).addClass('fade-in');
-                    next();
-                });
+            // Sửa từ editQuizForm thành addQuestionForm để phù hợp với form hiện tại
+            $('#addQuestionForm').on('submit', function() {
+                tinymce.triggerSave();
             });
 
-            // Form validation
+            // Validation form - đảm bảo ít nhất một đáp án được chọn
             $('#addQuestionForm').on('submit', function(e) {
-                let optionA = $('input[name="optionText"]:eq(0)').val().trim();
-                let optionB = $('input[name="optionText"]:eq(1)').val().trim();
-                let correctOption = $('input[name="correctOption"]:checked').val();
-
-                if (!optionA || !optionB) {
-                    e.preventDefault();
-                    alert('Vui lòng nhập ít nhất 2 lựa chọn A và B!');
-                    return false;
-                }
-
-                if (!correctOption) {
+                if (!$('input[name="correctOption"]:checked').length) {
                     e.preventDefault();
                     alert('Vui lòng chọn đáp án đúng!');
                     return false;
                 }
+                
+                // Kiểm tra ít nhất 2 lựa chọn phải được điền
+                var filledOptions = 0;
+                $('input[name="optionText"]').each(function() {
+                    if ($(this).val().trim() !== '') {
+                        filledOptions++;
+                    }
+                });
+                
+                if (filledOptions < 2) {
+                    e.preventDefault();
+                    alert('Vui lòng điền ít nhất 2 lựa chọn!');
+                    return false;
+                }
+                
+                tinymce.triggerSave();
             });
 
-            // Option input enhancement
-            $('input[name="optionText"]').on('input', function() {
-                const row = $(this).closest('.option-row');
-                if ($(this).val().trim()) {
-                    row.addClass('has-content');
-                } else {
-                    row.removeClass('has-content');
-                }
-            });
+            // Auto-hide alerts after 5 seconds
+            setTimeout(function() {
+                $('.alert').fadeOut('slow');
+            }, 5000);
+        });
 
-            // Auto-hide alerts
-            $('.alert').delay(5000).fadeOut(500);
-
-            // Smooth scroll for form focus
-            $('textarea, input').on('focus', function() {
-                if ($(window).width() < 768) {
-                    $('html, body').animate({
-                        scrollTop: $(this).offset().top - 100
-                    }, 300);
-                }
+        // Smooth scroll animation for page elements
+        $(window).on('load', function() {
+            $('.fade-in').each(function(index) {
+                $(this).delay(100 * index).animate({
+                    opacity: 1
+                }, 600);
             });
         });
     </script>

@@ -16,20 +16,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.NamingException;
 
-/**
- * Lớp DAO (Data Access Object) để thao tác với bảng 'vocabulary' trong cơ sở dữ liệu.
- * Bao gồm các phương thức CRUD, tìm kiếm, phân trang và các phương thức được tối ưu hóa.
- */
 public class VocabularyDAO {
     private static final Logger LOGGER = Logger.getLogger(VocabularyDAO.class.getName());
 
-    /**
-     * Trích xuất đầy đủ thông tin một đối tượng Vocabulary từ ResultSet.
-     * Phương thức này tải cả dữ liệu media (ảnh, audio).
-     * @param rs ResultSet từ một câu lệnh query.
-     * @return Một đối tượng Vocabulary đầy đủ.
-     * @throws SQLException nếu có lỗi khi truy cập dữ liệu trong ResultSet.
-     */
     private Vocabulary extractVocabularyFromResultSet(ResultSet rs) throws SQLException {
         Vocabulary vocab = new Vocabulary();
         vocab.setVocabId(rs.getInt("vocab_id"));
@@ -47,13 +36,6 @@ public class VocabularyDAO {
         return vocab;
     }
 
-    /**
-     * [TỐI ƯU HÓA] Trích xuất thông tin Vocabulary cho trang Flashcard.
-     * Phương thức này KHÔNG tải dữ liệu media, chỉ lấy cờ boolean 'has_image' và 'has_audio'.
-     * @param rs ResultSet từ một câu lệnh query đã được tối ưu.
-     * @return Một đối tượng Vocabulary cho view.
-     * @throws SQLException nếu có lỗi khi truy cập dữ liệu trong ResultSet.
-     */
     private Vocabulary extractVocabularyForFlashcardView(ResultSet rs) throws SQLException {
         Vocabulary vocab = new Vocabulary();
         vocab.setVocabId(rs.getInt("vocab_id"));
@@ -72,16 +54,6 @@ public class VocabularyDAO {
         return vocab;
     }
 
-    // =================================================================================
-    // CÁC PHƯƠNG THỨC ĐƯỢC TỐI ƯU HÓA CHO FLASHCARD
-    // =================================================================================
-
-    /**
-     * [TỐI ƯU HÓA] Lấy danh sách từ vựng của một bài học để hiển thị trên flashcard.
-     * Không tải dữ liệu BLOB (ảnh/audio).
-     * @param lessonId ID của bài học.
-     * @return Danh sách từ vựng đã được tối ưu.
-     */
     public List<Vocabulary> getVocabularyByLessonIdForFlashcards(int lessonId) {
         List<Vocabulary> vocabList = new ArrayList<>();
         String query = "SELECT vocab_id, word, meaning, example, lesson_id, created_at, " +
@@ -103,11 +75,6 @@ public class VocabularyDAO {
         return vocabList;
     }
     
-    /**
-     * [TỐI ƯU HÓA] Lấy toàn bộ từ vựng để hiển thị trên flashcard.
-     * Không tải dữ liệu BLOB (ảnh/audio).
-     * @return Danh sách toàn bộ từ vựng đã được tối ưu.
-     */
     public List<Vocabulary> getAllVocabularyForFlashcards() {
         List<Vocabulary> vocabList = new ArrayList<>();
         String query = "SELECT vocab_id, word, meaning, example, lesson_id, created_at, " +
@@ -127,18 +94,24 @@ public class VocabularyDAO {
         return vocabList;
     }
 
+    public List<Vocabulary> getVocabularyByLessonId(int lessonId) {
+        List<Vocabulary> vocabList = new ArrayList<>();
+        String query = "SELECT * FROM vocabulary WHERE lesson_id = ? ORDER BY word ASC";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            
+            ps.setInt(1, lessonId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    vocabList.add(extractVocabularyFromResultSet(rs));
+                }
+            }
+        } catch (SQLException | NamingException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi khi lấy danh sách từ vựng đầy đủ theo lesson ID: " + lessonId, e);
+        }
+        return vocabList;
+    }
 
-    // =================================================================================
-    // CÁC PHƯƠNG THỨC CRUD VÀ TRUY VẤN ĐẦY ĐỦ
-    // (Hữu ích cho các trang quản trị, nơi cần tải đầy đủ dữ liệu)
-    // =================================================================================
-
-    /**
-     * Lấy một từ vựng bằng ID, bao gồm cả dữ liệu media.
-     * Dùng cho MediaServlet và trang chỉnh sửa chi tiết.
-     * @param vocabId ID của từ vựng.
-     * @return Đối tượng Vocabulary hoặc null nếu không tìm thấy.
-     */
     public Vocabulary getVocabularyById(int vocabId) {
         String query = "SELECT * FROM vocabulary WHERE vocab_id = ?";
         try (Connection conn = DBContext.getConnection();
@@ -155,11 +128,6 @@ public class VocabularyDAO {
         return null;
     }
 
-    /**
-     * Thêm một từ vựng mới vào cơ sở dữ liệu.
-     * @param vocab Đối tượng Vocabulary chứa thông tin cần thêm.
-     * @return true nếu thêm thành công, false nếu thất bại.
-     */
     public boolean addVocabulary(Vocabulary vocab) {
         String query = "INSERT INTO vocabulary (word, meaning, example, image_data, audio_data, lesson_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection();
@@ -184,11 +152,6 @@ public class VocabularyDAO {
         }
     }
 
-    /**
-     * Cập nhật thông tin một từ vựng đã có.
-     * @param vocab Đối tượng Vocabulary chứa thông tin cần cập nhật.
-     * @return true nếu cập nhật thành công, false nếu thất bại.
-     */
     public boolean updateVocabulary(Vocabulary vocab) {
         String query = "UPDATE vocabulary SET word = ?, meaning = ?, example = ?, image_data = ?, audio_data = ?, lesson_id = ? WHERE vocab_id = ?";
         try (Connection conn = DBContext.getConnection();
@@ -213,11 +176,6 @@ public class VocabularyDAO {
         }
     }
     
-    /**
-     * Xóa một từ vựng khỏi cơ sở dữ liệu.
-     * @param vocabId ID của từ vựng cần xóa.
-     * @return true nếu xóa thành công, false nếu thất bại.
-     */
     public boolean deleteVocabulary(int vocabId) {
         String query = "DELETE FROM vocabulary WHERE vocab_id = ?";
         try (Connection conn = DBContext.getConnection();
@@ -230,18 +188,8 @@ public class VocabularyDAO {
         }
     }
     
-    // =================================================================================
-    // CÁC PHƯƠNG THỨC TIỆN ÍCH KHÁC
-    // =================================================================================
-
-    /**
-     * Tìm kiếm từ vựng theo từ hoặc nghĩa.
-     * @param keyword Từ khóa tìm kiếm.
-     * @return Danh sách từ vựng phù hợp.
-     */
     public List<Vocabulary> searchVocabulary(String keyword) {
         List<Vocabulary> vocabList = new ArrayList<>();
-        // Tải đầy đủ dữ liệu vì thường dùng trong trang quản lý
         String query = "SELECT * FROM vocabulary WHERE word LIKE ? OR meaning LIKE ? ORDER BY word ASC";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
@@ -259,10 +207,6 @@ public class VocabularyDAO {
         return vocabList;
     }
 
-    /**
-     * Đếm tổng số từ vựng trong cơ sở dữ liệu.
-     * @return Tổng số từ vựng.
-     */
     public int countTotalVocabulary() {
         String query = "SELECT COUNT(*) FROM vocabulary";
         try (Connection conn = DBContext.getConnection();
@@ -278,14 +222,13 @@ public class VocabularyDAO {
     }
 
     /**
-     * Lấy danh sách từ vựng để phân trang.
+     * Lấy danh sách từ vựng để phân trang cho trang quản trị (tải đầy đủ dữ liệu).
      * @param pageNumber Số trang hiện tại.
      * @param pageSize Số lượng từ vựng trên mỗi trang.
      * @return Danh sách từ vựng của trang đó.
      */
     public List<Vocabulary> getVocabularyByPage(int pageNumber, int pageSize) {
         List<Vocabulary> vocabList = new ArrayList<>();
-        // Tải đầy đủ dữ liệu vì thường dùng trong trang quản lý
         String query = "SELECT * FROM vocabulary ORDER BY word ASC LIMIT ? OFFSET ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
@@ -304,16 +247,39 @@ public class VocabularyDAO {
         }
         return vocabList;
     }
-
+    
     /**
-     * Lấy dữ liệu thống kê về số lượng từ vựng được thêm theo tháng.
-     * Dùng cho dashboard hoặc trang thống kê.
-     * @param lastMonths Số tháng gần nhất cần thống kê.
-     * @return Một Map với key là "Tháng X/YYYY" và value là số lượng từ.
+     * [PHƯƠNG THỨC MỚI] Lấy danh sách từ vựng để phân trang cho trang người dùng (chỉ tải cờ media).
+     * @param pageNumber Số trang hiện tại.
+     * @param pageSize Số lượng từ vựng trên mỗi trang.
+     * @return Danh sách từ vựng đã tối ưu của trang đó.
      */
+    public List<Vocabulary> getVocabularyByPageForFlashcards(int pageNumber, int pageSize) {
+        List<Vocabulary> vocabList = new ArrayList<>();
+        String query = "SELECT vocab_id, word, meaning, example, lesson_id, created_at, " +
+                       "(image_data IS NOT NULL AND LENGTH(image_data) > 0) AS has_image, " +
+                       "(audio_data IS NOT NULL AND LENGTH(audio_data) > 0) AS has_audio " +
+                       "FROM vocabulary ORDER BY word ASC LIMIT ? OFFSET ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            int offset = (pageNumber - 1) * pageSize;
+            ps.setInt(1, pageSize);
+            ps.setInt(2, offset);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    vocabList.add(extractVocabularyForFlashcardView(rs));
+                }
+            }
+        } catch (SQLException | NamingException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi khi lấy danh sách từ vựng tối ưu theo trang", e);
+        }
+        return vocabList;
+    }
+
     public Map<String, Integer> getMonthlyVocabularyGrowth(int lastMonths) {
         Map<String, Integer> monthlyGrowth = new LinkedHashMap<>();
-        // Lưu ý: Cú pháp này dành cho MySQL. Có thể cần thay đổi cho các hệ CSDL khác.
         String query = "SELECT YEAR(created_at) AS year, MONTH(created_at) AS month, COUNT(vocab_id) AS count " +
                        "FROM vocabulary " +
                        "WHERE created_at >= CURDATE() - INTERVAL ? MONTH " +

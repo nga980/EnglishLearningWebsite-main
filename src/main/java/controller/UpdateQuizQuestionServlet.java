@@ -52,7 +52,10 @@ public class UpdateQuizQuestionServlet extends HttpServlet {
             }
 
             // Tạo đối tượng câu hỏi
-            QuizQuestion questionToUpdate = new QuizQuestion(questionId, lessonId, questionText);
+            QuizQuestion questionToUpdate = new QuizQuestion();
+            questionToUpdate.setQuestionId(questionId);
+            questionToUpdate.setLessonId(lessonId); // Giữ lại để biết nó thuộc bài học nào nếu cần
+            questionToUpdate.setQuestionText(questionText);
             List<QuizOption> optionsToUpdate = new ArrayList<>();
 
             // Tạo danh sách các lựa chọn đã cập nhật

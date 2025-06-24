@@ -55,10 +55,10 @@
                                     <div class="form-group">
                                         <label><i class="fas fa-image"></i> Ảnh minh họa hiện tại</label>
                                         <div>
-                                            <c:if test="${vocabToEdit.hasImage}">
+                                            <c:if test="${not empty vocabToEdit.imageData and vocabToEdit.imageData.length > 0}">
                                                 <img src="${pageContext.request.contextPath}/media?id=${vocabToEdit.vocabId}&type=image" alt="Ảnh minh họa" style="max-width: 200px; border-radius: 8px;">
                                             </c:if>
-                                            <c:if test="${!vocabToEdit.hasImage}">
+                                            <c:if test="${empty vocabToEdit.imageData or vocabToEdit.imageData.length == 0}">
                                                 <p class="text-muted">Chưa có ảnh.</p>
                                             </c:if>
                                         </div>
@@ -72,10 +72,10 @@
                                     <div class="form-group">
                                         <label><i class="fas fa-volume-up"></i> File phát âm hiện tại</label>
                                         <div>
-                                            <c:if test="${vocabToEdit.hasAudio}">
+                                            <c:if test="${not empty vocabToEdit.audioData and vocabToEdit.audioData.length > 0}">
                                                 <audio controls src="${pageContext.request.contextPath}/media?id=${vocabToEdit.vocabId}&type=audio"></audio>
                                             </c:if>
-                                            <c:if test="${!vocabToEdit.hasAudio}">
+                                            <c:if test="${empty vocabToEdit.audioData or vocabToEdit.audioData.length == 0}">
                                                 <p class="text-muted">Chưa có audio.</p>
                                             </c:if>
                                         </div>
@@ -103,7 +103,7 @@
         </div>
     </main>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
