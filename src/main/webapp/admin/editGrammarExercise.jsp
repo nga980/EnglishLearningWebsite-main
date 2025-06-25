@@ -1,94 +1,555 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page import="model.User, model.QuizQuestion, model.GrammarTopic, java.util.List" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Sửa Bài Tập Ngữ Pháp - Admin</title>
+    <title>Sửa Bài Tập Ngữ Pháp - Admin Dashboard</title>
     
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/admin/css/admin-style.css">
     
-    <script src="https://cdn.tiny.cloud/1/YOUR_API_KEY/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tiny.cloud/1/vn0hiraxxi1kjrfnyjmwv5qey0src7qravqh77cccznwy44x/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    
+    
     <style>
-        /* Bạn có thể sao chép CSS từ trang editQuizQuestion.jsp nếu muốn giao diện tương tự */
+        :root {
+            --primary-color: #4f46e5;
+            --primary-dark: #4338ca;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --dark-color: #1f2937;
+            --light-bg: #f8fafc;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--dark-color);
+            line-height: 1.6;
+            padding-top: 56px; /* Để giữ khoảng cách cho navbar fixed-top */
+        }
+
+        .admin-main-content {
+            padding: 2rem;
+            min-height: 100vh;
+            margin-left: 220px; /* Để giữ khoảng cách cho sidebar */
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 2rem;
+        }
+
+        .breadcrumb-nav {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            margin-top: 1rem;
+        }
+
+        .breadcrumb-nav a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .breadcrumb-nav a:hover {
+            color: white;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(79, 70, 229, 0.25);
+        }
+
+        .option-row {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .option-row:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: var(--card-shadow);
+        }
+
+        .option-row.correct-answer {
+            background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+            border-color: var(--success-color);
+        }
+
+        .option-label {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .correct-indicator {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--success-color);
+            color: white;
+            border-radius: 50%;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s ease;
+        }
+
+        .option-row.correct-answer .correct-indicator {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .custom-radio {
+            position: relative;
+            display: inline-block;
+        }
+
+        .custom-radio input[type="radio"] {
+            opacity: 0;
+            position: absolute;
+        }
+
+        .custom-radio-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+
+        .custom-radio-indicator {
+            width: 1.5rem;
+            height: 1.5rem;
+            border: 2px solid #d1d5db;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .custom-radio input[type="radio"]:checked + .custom-radio-label .custom-radio-indicator {
+            border-color: var(--success-color);
+            background: var(--success-color);
+        }
+
+        .custom-radio input[type="radio"]:checked + .custom-radio-label .custom-radio-indicator::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 0.5rem;
+            height: 0.5rem;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(79, 70, 229, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-light {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-light:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+            color: white;
+        }
+
+        .alert {
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 1rem 1.5rem;
+            font-weight: 500;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            color: #dc2626;
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .form-actions {
+            background: #f9fafb;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .question-preview {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border-left: 4px solid var(--primary-color);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .admin-main-content {
+                padding: 1rem;
+            }
+            
+            .page-header {
+                padding: 1.5rem;
+                text-align: center;
+            }
+            
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .form-card {
+                padding: 1.5rem;
+            }
+            
+            .option-row {
+                padding: 1rem;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .form-actions .btn {
+                width: 100%;
+            }
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-spinner {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
     </style>
 </head>
 <body>
-    <jsp:include page="_adminLayout.jsp">
-        <jsp:param name="activePage" value="manage-grammar"/>
-    </jsp:include>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Đang tải...</span>
+            </div>
+            <p class="mt-3 mb-0">Đang xử lý...</p>
+        </div>
+    </div>
 
-    <main role="main" class="col-md-10 ml-sm-auto admin-main-content p-4">
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 class="h2"><i class="fas fa-edit"></i> Sửa Bài Tập Ngữ Pháp</h1>
+    <jsp:include page="_adminLayout.jsp">
+        <jsp:param name="activePage" value="manage-grammar"/> </jsp:include>
+
+    <main role="main" class="col-md-10 ml-sm-auto admin-main-content">
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-start flex-wrap">
+                <div>
+                    <h1><i class="fas fa-edit mr-3"></i>Sửa Bài Tập Ngữ Pháp</h1>
+                </div>
+                <a href="${pageContext.request.contextPath}/admin/manage-grammar-exercises?grammarTopicId=${questionToEdit.grammarTopicId}" 
+                   class="btn btn-outline-light">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Quay lại
+                </a>
+            </div>
         </div>
 
-        <c:if test="${not empty requestScope.errorMessage}">
-             <div class="alert alert-danger" role="alert">${requestScope.errorMessage}</div>
-        </c:if>
-
         <c:if test="${not empty questionToEdit}">
-            <div class="card">
-                <div class="card-body">
-                    <form method="POST" action="${pageContext.request.contextPath}/admin/update-grammar-exercise">
-                        <input type="hidden" name="questionId" value="${questionToEdit.questionId}">
-                        <input type="hidden" name="grammarTopicId" value="${questionToEdit.grammarTopicId}">
-                        
-                        <div class="form-group">
-                            <label for="questionText">Nội dung câu hỏi:</label>
-                            <textarea id="questionText" name="questionText" class="form-control" rows="8"><c:out value='${questionToEdit.questionText}'/></textarea>
-                        </div>
+            <div class="form-card">
+                <form method="POST" action="${pageContext.request.contextPath}/admin/update-grammar-exercise" id="editQuizForm"> <input type="hidden" name="questionId" value="<c:out value='${questionToEdit.questionId}'/>">
+                    <input type="hidden" name="grammarTopicId" value="<c:out value='${questionToEdit.grammarTopicId}'/>"> <div class="form-group">
+                        <label for="questionText">
+                            <i class="fas fa-question-circle text-primary mr-2"></i>
+                            Nội dung câu hỏi:
+                        </label>
+                        <textarea class="form-control" id="questionText" name="questionText" 
+                                  rows="4" required placeholder="Nhập nội dung câu hỏi..."><c:out value='${questionToEdit.questionText}'/></textarea>
+                        <small class="form-text text-muted">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Hãy viết câu hỏi rõ ràng và dễ hiểu
+                        </small>
+                    </div>
 
-                        <h5 class="mt-4">Các lựa chọn:</h5>
+                    <div class="question-preview">
+                        <h6><i class="fas fa-eye mr-2"></i>Xem trước câu hỏi:</h6>
+                        <p id="questionPreview" class="mb-0"><c:out value='${questionToEdit.questionText}' escapeXml="false"/></p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-list-ul text-primary mr-2"></i>
+                            Các lựa chọn và đáp án đúng:
+                        </h5>
+                        <small class="text-muted mb-3 d-block">
+                            <i class="fas fa-lightbulb mr-1"></i>
+                            Chọn đáp án đúng bằng cách click vào nút radio bên phải
+                        </small>
+
                         <c:forEach var="option" items="${questionToEdit.options}" varStatus="loop">
-                            <div class="input-group mb-3">
-                                <div class="input-group-prepend">
-                                    <div class="input-group-text">
-                                        <input type="radio" name="correctOption" value="${option.optionId}" ${option.isCorrect() ? 'checked' : ''} required>
+                            <div class="option-row ${option.isCorrect ? 'correct-answer' : ''}" data-option-id="${option.optionId}"> <div class="correct-indicator">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                
+                                <div class="d-flex align-items-center">
+                                    <div class="option-label">
+                                        ${loop.count}
+                                    </div>
+                                    
+                                    <div class="flex-grow-1 mr-3">
+                                        <input type="hidden" name="optionId" value="${option.optionId}">
+                                        <input type="text" class="form-control option-input" 
+                                               name="optionText" 
+                                               value="<c:out value='${option.optionText}'/>" 
+                                               required 
+                                               placeholder="Nhập lựa chọn ${loop.count}...">
+                                    </div>
+                                    
+                                    <div class="custom-radio">
+                                        <input class="form-check-input" type="radio" 
+                                               name="correctOption" 
+                                               value="${option.optionId}" id="option${option.optionId}"
+                                               ${option.isCorrect ? 'checked' : ''} required>
+                                        <label class="custom-radio-label" for="option${option.optionId}">
+                                            <span class="custom-radio-indicator"></span>
+                                            Đáp án đúng
+                                        </label>
                                     </div>
                                 </div>
-                                <input type="hidden" name="optionId" value="${option.optionId}">
-                                <input type="text" class="form-control" name="optionText" value="<c:out value='${option.optionText}'/>" required>
                             </div>
                         </c:forEach>
-                        
-                        <hr>
-                        <a href="${pageContext.request.contextPath}/admin/manage-grammar-exercises?grammarTopicId=${questionToEdit.grammarTopicId}" class="btn btn-secondary">
-                            <i class="fas fa-times"></i> Hủy
-                        </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Cập Nhật
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save mr-2"></i>
+                            Cập Nhật Bài Tập
                         </button>
-                    </form>
+                        <a href="${pageContext.request.contextPath}/admin/manage-grammar-exercises?grammarTopicId=${questionToEdit.grammarTopicId}" 
+                           class="btn btn-secondary btn-lg">
+                            <i class="fas fa-times mr-2"></i>
+                            Hủy bỏ
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </c:if>
+
+        <c:if test="${empty questionToEdit}">
+            <div class="form-card">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <strong>Lỗi!</strong> Không tìm thấy bài tập để sửa. Vui lòng thử lại.
                 </div>
+                <a href="${pageContext.request.contextPath}/admin/manage-grammar" class="btn btn-primary">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Quay lại Quản lý Ngữ pháp
+                </a>
             </div>
         </c:if>
     </main>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
+        // Cấu hình TinyMCE với chức năng upload file
         tinymce.init({
             selector: 'textarea#questionText',
-            height: 300,
+            height: 350,
             plugins: 'advlist lists link image media table code help wordcount',
             toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | link image media | code',
+            forced_root_block: 'div', // Sử dụng <div> làm khối gốc thay vì <p>
+            
             images_upload_url: '${pageContext.request.contextPath}/admin/upload-media',
             automatic_uploads: true,
             file_picker_types: 'image media',
+            
             file_picker_callback: function (cb, value, meta) {
-                // ... (sao chép mã file_picker_callback từ các trang khác)
+                var input = document.createElement('input');
+                input.setAttribute('type', 'file');
+                input.setAttribute('accept', meta.filetype === 'image' ? 'image/*' : 'video/*,audio/*');
+
+                input.onchange = function () {
+                    var file = this.files[0];
+                    var reader = new FileReader();
+                    reader.onload = function () {
+                        var id = 'blobid' + (new Date()).getTime();
+                        var blobCache = tinymce.activeEditor.editorUpload.blobCache;
+                        var base64 = reader.result.split(',')[1];
+                        var blobInfo = blobCache.create(id, file, base64);
+                        blobCache.add(blobInfo);
+                        cb(blobInfo.blobUri(), { title: file.name });
+                    };
+                    reader.readAsDataURL(file);
+                };
+                input.click();
             }
         });
-        
-        document.getElementById('editQuizForm').addEventListener('submit', function() {
-            tinymce.triggerSave();
+
+        // Form validation và xử lý submit
+        $(document).ready(function() {
+            // Lấy context path từ thuộc tính data của body
+            // $('body').attr('data-context-path', '${pageContext.request.contextPath}'); // Nếu _adminLayout.jsp chưa có
+
+            // Logic xem trước câu hỏi khi nội dung TinyMCE thay đổi
+            tinymce.get('questionText').on('change', function() {
+                // Đồng bộ nội dung TinyMCE vào textarea ẩn
+                tinymce.triggerSave();
+                // Hiển thị nội dung đã render vào phần xem trước
+                $('#questionPreview').html(tinymce.get('questionText').getContent());
+            });
+
+            $('#editQuizForm').on('submit', function(e) {
+                // Trigger save để đảm bảo textarea có nội dung mới nhất từ TinyMCE
+                tinymce.triggerSave();
+
+                // Hiển thị overlay loading khi submit thành công validation
+                $('#loadingOverlay').css('display', 'flex');
+                
+                // Validation cho nội dung câu hỏi
+                if (!tinymce.get('questionText').getContent().trim()) {
+                    e.preventDefault();
+                    Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Nội dung câu hỏi không được để trống.' });
+                    $('#loadingOverlay').css('display', 'none'); // Tắt loading overlay
+                    return false;
+                }
+
+                // Validation cho các lựa chọn
+                let allOptionsFilled = true;
+                $('input[name="optionText"]').each(function() {
+                    if (!$(this).val().trim()) {
+                        allOptionsFilled = false;
+                        return false; // Break loop
+                    }
+                });
+
+                if (!allOptionsFilled) {
+                    e.preventDefault();
+                    Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Nội dung các lựa chọn không được để trống.' });
+                    $('#loadingOverlay').css('display', 'none'); // Tắt loading overlay
+                    return false;
+                }
+
+                // Validation cho đáp án đúng
+                if (!$('input[name="correctOption"]:checked').length) {
+                    e.preventDefault();
+                    Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Vui lòng chọn đáp án đúng.' });
+                    $('#loadingOverlay').css('display', 'none'); // Tắt loading overlay
+                    return false;
+                }
+            });
+        });
+
+        // Hàm animation fade-in cho các phần tử trên trang
+        $(window).on('load', function() {
+            // Logic fade-in đã được di chuyển vào tinymce.init setup: function init event.
+            // Nếu bạn muốn các phần tử khác cũng fade-in, hãy đảm bảo chúng có class 'fade-in'
+            // và logic animate này được gọi sau khi DOM sẵn sàng.
         });
     </script>
 </body>

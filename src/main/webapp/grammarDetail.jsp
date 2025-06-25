@@ -1,7 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="model.User"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
 <!DOCTYPE html>
 <html>
@@ -385,7 +385,7 @@
                             <c:if test="${not empty grammarTopic.difficultyLevel}">
                                 <div class="difficulty-badge 
                                     ${grammarTopic.difficultyLevel == 'Dễ' ? 'difficulty-easy' : 
-                                      grammarTopic.difficultyLevel == 'Trung bình' ? 'difficulty-medium' : 'difficulty-hard'}">
+                                        grammarTopic.difficultyLevel == 'Trung bình' ? 'difficulty-medium' : 'difficulty-hard'}">
                                     <i class="fas fa-signal me-1"></i>
                                     <c:out value="${grammarTopic.difficultyLevel}"/>
                                 </div>
@@ -414,43 +414,13 @@
                             </div>
                         </div>
                     </c:if>
-                    <c:if test="${not empty exerciseList}">
-                        <div class="exercise-section">
-                            <h4><i class="fas fa-pencil-ruler"></i> Bài tập củng cố</h4>
-                            <form action="${pageContext.request.contextPath}/submit-grammar-exercise" method="POST">
-                                <input type="hidden" name="grammarTopicId" value="${grammarTopic.topicId}">
-                                
-                                <c:forEach var="question" items="${exerciseList}" varStatus="loop">
-                                    <div class="mb-4">
-                                        <div class="exercise-question">
-                                            <strong>Câu ${loop.count}:</strong>
-                                            <c:out value="${question.questionText}" escapeXml="false"/>
-                                        </div>
-                                        <div class="exercise-options pl-4">
-                                            <c:forEach var="option" items="${question.options}">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="radio" 
-                                                           name="question_${question.questionId}" 
-                                                           id="option_${option.optionId}" 
-                                                           value="${option.optionId}" required>
-                                                    <label class="form-check-label" for="option_${option.optionId}">
-                                                        <c:out value="${option.optionText}"/>
-                                                    </label>
-                                                </div>
-                                            </c:forEach>
-                                        </div>
-                                    </div>
-                                </c:forEach>
-                                
-                                <hr>
-                                <div class="text-center">
-                                    <button type="submit" class="btn btn-success btn-lg">
-                                        <i class="fas fa-check-circle"></i> Nộp bài
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </c:if>
+                    
+                    <div class="text-center mt-4">
+                        <a href="${pageContext.request.contextPath}/take-grammar-exercise?grammarTopicId=${grammarTopic.topicId}" 
+                           class="btn btn-primary btn-lg">
+                            <i class="fas fa-pencil-alt me-2"></i> Làm Bài Tập Ngữ Pháp
+                        </a>
+                    </div>
 
                 </c:when>
                 <c:otherwise>
@@ -469,7 +439,6 @@
         </div>
     </div>
 
-    <!-- Back to Top Button -->
     <button class="back-to-top" id="backToTop">
         <i class="fas fa-arrow-up"></i>
     </button>

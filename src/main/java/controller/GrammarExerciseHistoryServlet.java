@@ -7,7 +7,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import model.GrammarExerciseHistoryItem;
+import model.GrammarExerciseHistoryItem; // Đã đổi import
 import model.User;
 
 import java.io.IOException;
@@ -33,9 +33,9 @@ public class GrammarExerciseHistoryServlet extends HttpServlet {
             return;
         }
 
-        List<GrammarExerciseHistoryItem> history = quizDAO.getGrammarExerciseHistoryForUser(loggedInUser.getUserId());
-        request.setAttribute("grammarHistory", history);
+        List<GrammarExerciseHistoryItem> history = quizDAO.getGrammarExerciseHistoryForUser(loggedInUser.getUserId()); // Đã đổi phương thức DAO
+        request.setAttribute("grammarHistory", history); // Đã đổi tên attribute
 
-        request.getRequestDispatcher("/grammarExerciseHistory.jsp").forward(request, response);
+        request.getRequestDispatcher("/grammarExerciseHistory.jsp").forward(request, response); // Đã đổi tên JSP
     }
 }

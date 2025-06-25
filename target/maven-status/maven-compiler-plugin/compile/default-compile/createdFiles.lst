@@ -29,6 +29,7 @@ model\QuizHistoryItem.class
 controller\DeleteLessonServlet.class
 controller\LessonDetailServlet.class
 controller\LogoutServlet.class
+controller\TakeGrammarExerciseServlet.class
 controller\GrammarListServlet.class
 controller\ManageGrammarServlet.class
 model\QuizQuestion.class

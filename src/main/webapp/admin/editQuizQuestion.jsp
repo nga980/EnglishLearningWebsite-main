@@ -382,7 +382,7 @@
                     <!-- Question Preview -->
                     <div class="question-preview">
                         <h6><i class="fas fa-eye mr-2"></i>Xem trước câu hỏi:</h6>
-                        <p id="questionPreview" class="mb-0"><c:out value='${questionToEdit.questionText}'/></p>
+                        <p id="questionPreview" class="mb-0"><c:out value='${questionToEdit.questionText}' escapeXml="false"/></p>
                     </div>
 
                     <!-- Options Section -->

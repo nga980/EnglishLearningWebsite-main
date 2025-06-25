@@ -403,7 +403,7 @@
                                         <div class="question-header d-flex flex-column flex-sm-row justify-content-between align-items-start">
                                             <div class="mb-2 mb-sm-0">
                                                 <span class="question-number">Câu ${loop.count}</span>
-                                                <span><c:out value="${question.questionText}"/></span>
+                                                <span><c:out value="${question.questionText}" escapeXml="false"/></span>
                                             </div>
                                             <div class="btn-group flex-shrink-0">
                                                 <a href="${pageContext.request.contextPath}/admin/edit-quiz-question-form?questionId=${question.questionId}" 
@@ -462,7 +462,7 @@
                         Nội dung câu hỏi:
                     </label>
                     <textarea class="form-control" id="questionText" name="questionText" rows="3" 
-                              placeholder="Nhập nội dung câu hỏi..." required></textarea>
+                              placeholder="Nhập nội dung câu hỏi..." ></textarea>
                 </div>
 
                 <div class="mb-3">
@@ -598,6 +598,7 @@
             images_upload_url: '${pageContext.request.contextPath}/admin/upload-media',
             automatic_uploads: true,
             file_picker_types: 'image media',
+            forced_root_block: false,
             
             file_picker_callback: function (cb, value, meta) {
                 var input = document.createElement('input');
