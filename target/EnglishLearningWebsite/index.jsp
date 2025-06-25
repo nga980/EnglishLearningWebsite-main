@@ -437,7 +437,7 @@
                                             <c:out value="${lesson.title}"/>
                                         </h5>
                                         <p class="card-text">
-                                            <c:out value="${lesson.content}"/>
+                                            <c:out value="${lesson.content}" escapeXml="false"/>
                                         </p>
                                         <a href="${pageContext.request.contextPath}/lesson-detail?lessonId=${lesson.lessonId}" 
                                            class="btn lesson-button">

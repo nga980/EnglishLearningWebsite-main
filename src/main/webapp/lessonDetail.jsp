@@ -516,7 +516,18 @@
     <jsp:include page="/common/header.jsp">
         <jsp:param name="activePage" value="lessons"/>
     </jsp:include>
-
+    <div class="container mt-3">
+        <c:if test="${not empty sessionScope.errorMessage}">
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <strong>Lỗi:</strong> <c:out value="${sessionScope.errorMessage}"/>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <%-- Xóa errorMessage khỏi session sau khi hiển thị --%>
+            <c:remove var="errorMessage" scope="session"/>
+        </c:if>
+    </div>
     <div class="container-fluid">
         <c:choose>
             <c:when test="${not empty lesson}">
@@ -630,6 +641,10 @@
                             <a href="${pageContext.request.contextPath}/take-quiz?lessonId=${lesson.lessonId}" class="btn btn-primary">
                                 <i class="fas fa-question-circle"></i> Làm Bài Trắc Nghiệm
                             </a>
+                            <a href="${pageContext.request.contextPath}/matching-game?lessonId=${lesson.lessonId}" 
+                                class="btn btn-primary btn-lg mt-4">
+                                <i class="fas fa-puzzle-piece me-2"></i> Chơi Game Nối Từ
+                             </a>
                         </div>
                     </div>
                 </div>

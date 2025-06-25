@@ -1,105 +1,62 @@
 package model;
 
-import java.sql.Timestamp;
+import java.io.Serializable;
 
-public class Vocabulary {
+public class Vocabulary implements Serializable {
     private int vocabId;
     private String word;
     private String meaning;
     private String example;
-    private Integer lessonId;
-    private Timestamp createdAt;
 
-    // Dữ liệu media (chỉ được tải khi cần)
-    private byte[] imageData;
-    private byte[] audioData;
-    
-    // --- NEW: Thêm các trường boolean để tối ưu hóa ---
-    // Các trường này sẽ được DAO thiết lập khi tải danh sách cho flashcard
+    private transient byte[] imageData;
+    private transient byte[] audioData;
+
+    private Integer lessonId;
+    private java.sql.Timestamp createdAt;
+
+    // THÊM CÁC TRƯỜNG hasImage và hasAudio
     private boolean hasImage;
     private boolean hasAudio;
 
-    public Vocabulary() {
-    }
+    // CONSTRUCTOR
+    public Vocabulary() {}
 
-    public int getVocabId() {
-        return vocabId;
-    }
+    // GETTERS
+    public int getVocabId() { return vocabId; }
+    public String getWord() { return word; }
+    public String getMeaning() { return meaning; }
+    public String getExample() { return example; }
+    public byte[] getImageData() { return imageData; }
+    public byte[] getAudioData() { return audioData; }
+    public Integer getLessonId() { return lessonId; }
+    public java.sql.Timestamp getCreatedAt() { return createdAt; }
 
-    public void setVocabId(int vocabId) {
-        this.vocabId = vocabId;
-    }
+    // THÊM GETTERS MỚI
+    public boolean isHasImage() { return hasImage; } // Getter cho boolean thường dùng is...
+    public boolean isHasAudio() { return hasAudio; } // Getter cho boolean thường dùng is...
 
-    public String getWord() {
-        return word;
-    }
+    // SETTERS
+    public void setVocabId(int vocabId) { this.vocabId = vocabId; }
+    public void setWord(String word) { this.word = word; }
+    public void setMeaning(String meaning) { this.meaning = meaning; }
+    public void setExample(String example) { this.example = example; }
+    public void setImageData(byte[] imageData) { this.imageData = imageData; }
+    public void setAudioData(byte[] audioData) { this.audioData = audioData; }
+    public void setLessonId(Integer lessonId) { this.lessonId = lessonId; }
+    public void setCreatedAt(java.sql.Timestamp createdAt) { this.createdAt = createdAt; }
 
-    public void setWord(String word) {
-        this.word = word;
-    }
+    // THÊM SETTERS MỚI
+    public void setHasImage(boolean hasImage) { this.hasImage = hasImage; }
+    public void setHasAudio(boolean hasAudio) { this.hasAudio = hasAudio; }
 
-    public String getMeaning() {
-        return meaning;
+    @Override
+    public String toString() {
+        return "Vocabulary{" +
+               "vocabId=" + vocabId +
+               ", word='" + word + '\'' +
+               ", meaning='" + meaning + '\'' +
+               ", hasImage=" + hasImage + // Thêm vào toString nếu muốn
+               ", hasAudio=" + hasAudio + // Thêm vào toString nếu muốn
+               '}';
     }
-
-    public void setMeaning(String meaning) {
-        this.meaning = meaning;
-    }
-
-    public String getExample() {
-        return example;
-    }
-
-    public void setExample(String example) {
-        this.example = example;
-    }
-
-    public Integer getLessonId() {
-        return lessonId;
-    }
-
-    public void setLessonId(Integer lessonId) {
-        this.lessonId = lessonId;
-    }
-
-    public Timestamp getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Timestamp createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public byte[] getImageData() {
-        return imageData;
-    }
-
-    public void setImageData(byte[] imageData) {
-        this.imageData = imageData;
-    }
-
-    public byte[] getAudioData() {
-        return audioData;
-    }
-
-    public void setAudioData(byte[] audioData) {
-        this.audioData = audioData;
-    }
-
-    public boolean isHasImage() {
-        return hasImage;
-    }
-
-    public void setHasImage(boolean hasImage) {
-        this.hasImage = hasImage;
-    }
-
-    public boolean isHasAudio() {
-        return hasAudio;
-    }
-
-    public void setHasAudio(boolean hasAudio) {
-        this.hasAudio = hasAudio;
-    }
-
 }
