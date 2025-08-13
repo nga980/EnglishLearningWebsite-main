@@ -7,9 +7,9 @@
         maxActive="100" 
         maxIdle="30" 
         maxWait="10000"
-        username="root"
-        password=""
-        driverClassName="com.mysql.cj.jdbc.Driver"
-        url="jdbc:mysql://localhost:3306/english_learning_db?useSSL=false&amp;allowPublicKeyRetrieval=true&amp;serverTimezone=UTC"
+        username="admin"
+        password="aFoj4xupmtm0zPGgnWfJ"
+        driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+        url="jdbc:sqlserver://database-1.c7ckgqykkbhq.ap-southeast-2.rds.amazonaws.com:1433;databaseName=DB_EnglishLearning;encrypt=true;trustServerCertificate=true;"
     />
 </Context>

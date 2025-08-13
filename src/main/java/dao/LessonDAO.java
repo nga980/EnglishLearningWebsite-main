@@ -2,193 +2,186 @@ package dao;
 
 import model.Lesson;
 import utils.DBContext;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
+
+import javax.naming.NamingException;
+import java.sql.*;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.Map;
-import java.util.LinkedHashMap;
-import javax.naming.NamingException; // Thêm import
 
 public class LessonDAO {
     private static final Logger LOGGER = Logger.getLogger(LessonDAO.class.getName());
 
+    /** Map 1 hàng ResultSet -> Lesson */
+    private Lesson mapRow(ResultSet rs) throws SQLException {
+        Lesson l = new Lesson();
+        l.setLessonId(rs.getInt("lesson_id"));
+        l.setTitle(rs.getString("title"));
+        l.setContent(rs.getString("content"));
+        l.setCreatedAt(rs.getTimestamp("created_at"));
+        return l;
+    }
+
+    /** Phân trang: ORDER BY + OFFSET/FETCH (SQL Server) */
     public List<Lesson> getLessonsByPage(int pageNumber, int pageSize) {
         List<Lesson> lessons = new ArrayList<>();
-        String query = "SELECT lesson_id, title, content, created_at FROM lessons ORDER BY created_at DESC LIMIT ? OFFSET ?";
-        
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+        String sql =
+            "SELECT lesson_id, title, [content], created_at " +
+            "FROM dbo.lessons " +
+            "ORDER BY created_at DESC " +
+            "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
-            int offset = (pageNumber - 1) * pageSize;
-            ps.setInt(1, pageSize);
-            ps.setInt(2, offset);
-            
+        int offset = Math.max(0, (pageNumber - 1) * pageSize);
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, offset);
+            ps.setInt(2, pageSize);
+
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Lesson lesson = new Lesson();
-                    lesson.setLessonId(rs.getInt("lesson_id"));
-                    lesson.setTitle(rs.getString("title"));
-                    lesson.setCreatedAt(rs.getTimestamp("created_at"));
-                    lessons.add(lesson);
-                }
+                while (rs.next()) lessons.add(mapRow(rs));
             }
-        } catch (SQLException | NamingException e) { // SỬA Ở ĐÂY
+        } catch (SQLException | NamingException e) {
             LOGGER.log(Level.SEVERE, "Lỗi khi lấy danh sách bài học theo trang", e);
         }
         return lessons;
     }
 
+    /** Lấy bài học theo ID */
     public Lesson getLessonById(int lessonId) {
-        String query = "SELECT lesson_id, title, content, created_at FROM lessons WHERE lesson_id = ?";
-        Lesson lesson = null;
+        String sql = "SELECT lesson_id, title, [content], created_at FROM dbo.lessons WHERE lesson_id = ?";
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, lessonId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    lesson = new Lesson();
-                    lesson.setLessonId(rs.getInt("lesson_id"));
-                    lesson.setTitle(rs.getString("title"));
-                    lesson.setContent(rs.getString("content"));
-                    lesson.setCreatedAt(rs.getTimestamp("created_at"));
-                }
+                if (rs.next()) return mapRow(rs);
             }
-        } catch (SQLException | NamingException e) { // SỬA Ở ĐÂY
+        } catch (SQLException | NamingException e) {
             LOGGER.log(Level.SEVERE, "Lỗi khi lấy bài học với ID: " + lessonId, e);
         }
-        return lesson;
+        return null;
     }
 
+    /** Thêm bài học; created_at để DB tự set (DEFAULT) */
     public boolean addLesson(Lesson lesson) {
-        String query = "INSERT INTO lessons (title, content, created_at) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO dbo.lessons (title, [content]) VALUES (?, ?)";
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) { 
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, lesson.getTitle());
             ps.setString(2, lesson.getContent());
-            ps.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
 
-            int rowsAffected = ps.executeUpdate();
-            if (rowsAffected > 0) {
-                try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        lesson.setLessonId(generatedKeys.getInt(1));
-                    }
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                try (ResultSet keys = ps.getGeneratedKeys()) {
+                    if (keys.next()) lesson.setLessonId(keys.getInt(1));
                 }
                 return true;
             }
-        } catch (SQLException | NamingException e) { // SỬA Ở ĐÂY
+        } catch (SQLException | NamingException e) {
             LOGGER.log(Level.SEVERE, "Lỗi khi thêm bài học mới: " + lesson.getTitle(), e);
         }
         return false;
     }
 
+    /** Cập nhật bài học */
     public boolean updateLesson(Lesson lesson) {
-        String query = "UPDATE lessons SET title = ?, content = ? WHERE lesson_id = ?";
+        String sql = "UPDATE dbo.lessons SET title = ?, [content] = ? WHERE lesson_id = ?";
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, lesson.getTitle());
             ps.setString(2, lesson.getContent());
             ps.setInt(3, lesson.getLessonId());
-
             return ps.executeUpdate() > 0;
-        } catch (SQLException | NamingException e) { // SỬA Ở ĐÂY
+        } catch (SQLException | NamingException e) {
             LOGGER.log(Level.SEVERE, "Lỗi khi cập nhật bài học ID: " + lesson.getLessonId(), e);
         }
         return false;
     }
 
+    /** Xóa bài học */
     public boolean deleteLesson(int lessonId) {
-        String query = "DELETE FROM lessons WHERE lesson_id = ?";
+        String sql = "DELETE FROM dbo.lessons WHERE lesson_id = ?";
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, lessonId);
             return ps.executeUpdate() > 0;
-        } catch (SQLException | NamingException e) { // SỬA Ở ĐÂY
+        } catch (SQLException | NamingException e) {
             LOGGER.log(Level.SEVERE, "Lỗi khi xóa bài học ID: " + lessonId, e);
         }
         return false;
     }
-    
+
+    /** Đếm tổng số bài học */
     public int countTotalLessons() {
-        String query = "SELECT COUNT(*) FROM lessons";
+        String sql = "SELECT COUNT(*) FROM dbo.lessons";
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query);
+             PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
-        } catch (SQLException | NamingException e) { // SỬA Ở ĐÂY
+            if (rs.next()) return rs.getInt(1);
+        } catch (SQLException | NamingException e) {
             LOGGER.log(Level.SEVERE, "Lỗi khi đếm tổng số bài học", e);
         }
         return 0;
     }
-    
+
+    /** Tìm kiếm theo tiêu đề */
     public List<Lesson> searchLessons(String keyword) {
         List<Lesson> lessons = new ArrayList<>();
-        String query = "SELECT lesson_id, title, content, created_at FROM lessons WHERE title LIKE ? ORDER BY created_at DESC";
+        String sql =
+            "SELECT lesson_id, title, [content], created_at " +
+            "FROM dbo.lessons " +
+            "WHERE title LIKE ? " +
+            "ORDER BY created_at DESC";
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
-            
-            ps.setString(1, "%" + keyword + "%");
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, "%" + (keyword == null ? "" : keyword) + "%");
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Lesson lesson = new Lesson();
-                    lesson.setLessonId(rs.getInt("lesson_id"));
-                    lesson.setTitle(rs.getString("title"));
-                    lesson.setContent(rs.getString("content"));
-                    lesson.setCreatedAt(rs.getTimestamp("created_at"));
-                    lessons.add(lesson);
-                }
+                while (rs.next()) lessons.add(mapRow(rs));
             }
-        } catch (SQLException | NamingException e) { // SỬA Ở ĐÂY
+        } catch (SQLException | NamingException e) {
             LOGGER.log(Level.SEVERE, "Lỗi khi tìm kiếm bài học với từ khóa: " + keyword, e);
         }
         return lessons;
     }
-    
+
+    /** Lấy N bài gần nhất (dùng OFFSET 0 + FETCH NEXT) */
     public List<Lesson> getRecentLessons(int numberOfLessons) {
         List<Lesson> lessons = new ArrayList<>();
-        String query = "SELECT lesson_id, title, content, created_at FROM lessons ORDER BY created_at DESC LIMIT ?";
-        
+        String sql =
+            "SELECT lesson_id, title, [content], created_at " +
+            "FROM dbo.lessons " +
+            "ORDER BY created_at DESC " +
+            "OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY";
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, numberOfLessons);
-            
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Lesson lesson = new Lesson();
-                    lesson.setLessonId(rs.getInt("lesson_id"));
-                    lesson.setTitle(rs.getString("title"));
-                    lesson.setContent(rs.getString("content"));
-                    lesson.setCreatedAt(rs.getTimestamp("created_at"));
-                    lessons.add(lesson);
-                }
+                while (rs.next()) lessons.add(mapRow(rs));
             }
-        } catch (SQLException | NamingException e) { // SỬA Ở ĐÂY
+        } catch (SQLException | NamingException e) {
             LOGGER.log(Level.SEVERE, "Lỗi khi lấy danh sách bài học gần đây", e);
         }
         return lessons;
     }
-    
+
+    /** Tăng trưởng theo tháng gần đây (thay CURDATE/INTERVAL bằng DATEADD/GETDATE) */
     public Map<String, Integer> getMonthlyLessonGrowth(int lastMonths) {
         Map<String, Integer> monthlyGrowth = new LinkedHashMap<>();
-        String query = "SELECT YEAR(created_at) AS year, MONTH(created_at) AS month, COUNT(lesson_id) AS count " +
-                       "FROM lessons " +
-                       "WHERE created_at >= CURDATE() - INTERVAL ? MONTH " +
-                       "GROUP BY YEAR(created_at), MONTH(created_at) ORDER BY year, month;";
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
+        String sql =
+            "SELECT YEAR(created_at) AS [year], MONTH(created_at) AS [month], COUNT(lesson_id) AS [count] " +
+            "FROM dbo.lessons " +
+            "WHERE created_at >= DATEADD(MONTH, -?, CAST(GETDATE() AS DATE)) " +
+            "GROUP BY YEAR(created_at), MONTH(created_at) " +
+            "ORDER BY [year], [month]";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setInt(1, lastMonths);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -196,7 +189,7 @@ public class LessonDAO {
                     monthlyGrowth.put(monthKey, rs.getInt("count"));
                 }
             }
-        } catch (Exception e) {
+        } catch (SQLException | NamingException e) {
             LOGGER.log(Level.SEVERE, "Lỗi khi lấy dữ liệu tăng trưởng bài học", e);
         }
         return monthlyGrowth;

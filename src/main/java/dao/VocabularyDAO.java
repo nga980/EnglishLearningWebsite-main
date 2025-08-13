@@ -2,379 +2,325 @@ package dao;
 
 import model.Vocabulary;
 import utils.DBContext;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+
+import javax.naming.NamingException;
+import java.sql.*;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.naming.NamingException;
 
 public class VocabularyDAO {
     private static final Logger LOGGER = Logger.getLogger(VocabularyDAO.class.getName());
 
-    // Phương thức trợ giúp để trích xuất đối tượng Vocabulary đầy đủ từ ResultSet
+    /* =========================
+       Helpers
+       ========================= */
     private Vocabulary extractVocabularyFromResultSet(ResultSet rs) throws SQLException {
         Vocabulary vocab = new Vocabulary();
         vocab.setVocabId(rs.getInt("vocab_id"));
         vocab.setWord(rs.getString("word"));
         vocab.setMeaning(rs.getString("meaning"));
         vocab.setExample(rs.getString("example"));
-        vocab.setImageData(rs.getBytes("image_data"));
-        vocab.setAudioData(rs.getBytes("audio_data"));
+        // Chú ý: chỉ select image_data/audio_data ở các API cần thiết để tránh tải BLOB không cần
+        try { vocab.setImageData(rs.getBytes("image_data")); } catch (SQLException ignore) {}
+        try { vocab.setAudioData(rs.getBytes("audio_data")); } catch (SQLException ignore) {}
 
         int lessonId = rs.getInt("lesson_id");
-        if (!rs.wasNull()) { // Kiểm tra nếu lesson_id không phải NULL trong DB
-            vocab.setLessonId(lessonId);
-        } else {
-            vocab.setLessonId(null); // Đặt rõ ràng là null nếu DB trả về NULL
-        }
+        if (!rs.wasNull()) vocab.setLessonId(lessonId); else vocab.setLessonId(null);
         vocab.setCreatedAt(rs.getTimestamp("created_at"));
         return vocab;
     }
 
-    // Phương thức trợ giúp để trích xuất đối tượng Vocabulary cho Flashcard View (chỉ cờ media)
     private Vocabulary extractVocabularyForFlashcardView(ResultSet rs) throws SQLException {
         Vocabulary vocab = new Vocabulary();
         vocab.setVocabId(rs.getInt("vocab_id"));
         vocab.setWord(rs.getString("word"));
         vocab.setMeaning(rs.getString("meaning"));
         vocab.setExample(rs.getString("example"));
-
         vocab.setHasImage(rs.getBoolean("has_image"));
         vocab.setHasAudio(rs.getBoolean("has_audio"));
-
         int lessonId = rs.getInt("lesson_id");
-        if (!rs.wasNull()) {
-            vocab.setLessonId(lessonId);
-        } else {
-            vocab.setLessonId(null);
-        }
+        if (!rs.wasNull()) vocab.setLessonId(lessonId); else vocab.setLessonId(null);
         vocab.setCreatedAt(rs.getTimestamp("created_at"));
         return vocab;
     }
 
-    // Lấy danh sách từ vựng theo lessonId cho Flashcards (chỉ lấy cờ media)
+    /* =========================
+       Flashcards (cờ media, không tải BLOB)
+       ========================= */
     public List<Vocabulary> getVocabularyByLessonIdForFlashcards(int lessonId) {
-        List<Vocabulary> vocabList = new ArrayList<>();
-        String query = "SELECT vocab_id, word, meaning, example, lesson_id, created_at, " +
-                       "(image_data IS NOT NULL AND LENGTH(image_data) > 0) AS has_image, " +
-                       "(audio_data IS NOT NULL AND LENGTH(audio_data) > 0) AS has_audio " +
-                       "FROM vocabulary WHERE lesson_id = ? ORDER BY word ASC";
+        List<Vocabulary> list = new ArrayList<>();
+        String sql =
+            "SELECT vocab_id, word, meaning, [example], lesson_id, created_at, " +
+            "       CAST(CASE WHEN image_data IS NOT NULL AND DATALENGTH(image_data) > 0 THEN 1 ELSE 0 END AS BIT) AS has_image, " +
+            "       CAST(CASE WHEN audio_data IS NOT NULL AND DATALENGTH(audio_data) > 0 THEN 1 ELSE 0 END AS BIT) AS has_audio " +
+            "FROM dbo.vocabulary WHERE lesson_id = ? ORDER BY word ASC";
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
-
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, lessonId);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    vocabList.add(extractVocabularyForFlashcardView(rs));
-                }
+                while (rs.next()) list.add(extractVocabularyForFlashcardView(rs));
             }
         } catch (SQLException | NamingException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi lấy danh sách từ vựng tối ưu theo lesson ID: " + lessonId, e);
+            LOGGER.log(Level.SEVERE, "Lỗi khi lấy vocab (flashcards) theo lesson_id=" + lessonId, e);
         }
-        return vocabList;
+        return list;
     }
 
-    // Lấy tất cả từ vựng cho Flashcards (chỉ lấy cờ media)
     public List<Vocabulary> getAllVocabularyForFlashcards() {
-        List<Vocabulary> vocabList = new ArrayList<>();
-        String query = "SELECT vocab_id, word, meaning, example, lesson_id, created_at, " +
-                       "(image_data IS NOT NULL AND LENGTH(image_data) > 0) AS has_image, " +
-                       "(audio_data IS NOT NULL AND LENGTH(audio_data) > 0) AS has_audio " +
-                       "FROM vocabulary ORDER BY word ASC";
+        List<Vocabulary> list = new ArrayList<>();
+        String sql =
+            "SELECT vocab_id, word, meaning, [example], lesson_id, created_at, " +
+            "       CAST(CASE WHEN image_data IS NOT NULL AND DATALENGTH(image_data) > 0 THEN 1 ELSE 0 END AS BIT) AS has_image, " +
+            "       CAST(CASE WHEN audio_data IS NOT NULL AND DATALENGTH(audio_data) > 0 THEN 1 ELSE 0 END AS BIT) AS has_audio " +
+            "FROM dbo.vocabulary ORDER BY word ASC";
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query);
+             PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                vocabList.add(extractVocabularyForFlashcardView(rs));
-            }
+            while (rs.next()) list.add(extractVocabularyForFlashcardView(rs));
         } catch (SQLException | NamingException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi lấy toàn bộ danh sách từ vựng tối ưu", e);
+            LOGGER.log(Level.SEVERE, "Lỗi khi lấy toàn bộ vocab (flashcards)", e);
         }
-        return vocabList;
+        return list;
     }
 
-    // Lấy danh sách từ vựng đầy đủ theo lessonId
+    /* =========================
+       CRUD (đầy đủ trường)
+       ========================= */
     public List<Vocabulary> getVocabularyByLessonId(int lessonId) {
-        List<Vocabulary> vocabList = new ArrayList<>();
-        String query = "SELECT * FROM vocabulary WHERE lesson_id = ? ORDER BY word ASC";
+        List<Vocabulary> list = new ArrayList<>();
+        String sql = "SELECT vocab_id, word, meaning, [example], image_data, audio_data, lesson_id, created_at " +
+                     "FROM dbo.vocabulary WHERE lesson_id = ? ORDER BY word ASC";
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
-
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, lessonId);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    vocabList.add(extractVocabularyFromResultSet(rs));
-                }
+                while (rs.next()) list.add(extractVocabularyFromResultSet(rs));
             }
         } catch (SQLException | NamingException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi lấy danh sách từ vựng đầy đủ theo lesson ID: " + lessonId, e);
+            LOGGER.log(Level.SEVERE, "Lỗi khi lấy vocab đầy đủ theo lesson_id=" + lessonId, e);
         }
-        return vocabList;
+        return list;
     }
 
-    // Lấy từ vựng theo ID
     public Vocabulary getVocabularyById(int vocabId) {
-        String query = "SELECT * FROM vocabulary WHERE vocab_id = ?";
+        String sql = "SELECT vocab_id, word, meaning, [example], image_data, audio_data, lesson_id, created_at " +
+                     "FROM dbo.vocabulary WHERE vocab_id = ?";
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, vocabId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return extractVocabularyFromResultSet(rs);
-                }
+                if (rs.next()) return extractVocabularyFromResultSet(rs);
             }
         } catch (SQLException | NamingException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi lấy từ vựng với ID: " + vocabId, e);
+            LOGGER.log(Level.SEVERE, "Lỗi khi lấy vocab theo id=" + vocabId, e);
         }
         return null;
     }
 
-    // Thêm từ vựng mới
     public boolean addVocabulary(Vocabulary vocab) {
-        String query = "INSERT INTO vocabulary (word, meaning, example, image_data, audio_data, lesson_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        // created_at để DB tự set DEFAULT -> không truyền
+        String sql = "INSERT INTO dbo.vocabulary (word, meaning, [example], image_data, audio_data, lesson_id) " +
+                     "VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
-
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, vocab.getWord());
             ps.setString(2, vocab.getMeaning());
             ps.setString(3, vocab.getExample());
             ps.setBytes(4, vocab.getImageData());
             ps.setBytes(5, vocab.getAudioData());
-            if (vocab.getLessonId() != null) {
-                ps.setInt(6, vocab.getLessonId());
-            } else {
-                ps.setNull(6, Types.INTEGER);
-            }
-            ps.setTimestamp(7, new Timestamp(System.currentTimeMillis()));
-
+            if (vocab.getLessonId() != null) ps.setInt(6, vocab.getLessonId()); else ps.setNull(6, Types.INTEGER);
             return ps.executeUpdate() > 0;
         } catch (SQLException | NamingException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi thêm từ vựng mới: " + vocab.getWord(), e);
+            LOGGER.log(Level.SEVERE, "Lỗi khi thêm vocab: " + vocab.getWord(), e);
             return false;
         }
     }
 
-    // Cập nhật từ vựng
     public boolean updateVocabulary(Vocabulary vocab) {
-        String query = "UPDATE vocabulary SET word = ?, meaning = ?, example = ?, image_data = ?, audio_data = ?, lesson_id = ? WHERE vocab_id = ?";
+        String sql = "UPDATE dbo.vocabulary SET word = ?, meaning = ?, [example] = ?, image_data = ?, audio_data = ?, lesson_id = ? " +
+                     "WHERE vocab_id = ?";
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, vocab.getWord());
             ps.setString(2, vocab.getMeaning());
             ps.setString(3, vocab.getExample());
             ps.setBytes(4, vocab.getImageData());
             ps.setBytes(5, vocab.getAudioData());
-
-            if (vocab.getLessonId() != null) {
-                ps.setInt(6, vocab.getLessonId());
-            } else {
-                ps.setNull(6, Types.INTEGER);
-            }
+            if (vocab.getLessonId() != null) ps.setInt(6, vocab.getLessonId()); else ps.setNull(6, Types.INTEGER);
             ps.setInt(7, vocab.getVocabId());
-
             return ps.executeUpdate() > 0;
         } catch (SQLException | NamingException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi cập nhật từ vựng ID: " + vocab.getVocabId(), e);
+            LOGGER.log(Level.SEVERE, "Lỗi khi cập nhật vocab_id=" + vocab.getVocabId(), e);
             return false;
         }
     }
 
-    // Xóa từ vựng
     public boolean deleteVocabulary(int vocabId) {
-        String query = "DELETE FROM vocabulary WHERE vocab_id = ?";
+        String sql = "DELETE FROM dbo.vocabulary WHERE vocab_id = ?";
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, vocabId);
             return ps.executeUpdate() > 0;
         } catch (SQLException | NamingException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi xóa từ vựng ID: " + vocabId, e);
+            LOGGER.log(Level.SEVERE, "Lỗi khi xóa vocab_id=" + vocabId, e);
             return false;
         }
     }
 
-    // Tìm kiếm từ vựng
     public List<Vocabulary> searchVocabulary(String keyword) {
-        List<Vocabulary> vocabList = new ArrayList<>();
-        String query = "SELECT * FROM vocabulary WHERE word LIKE ? OR meaning LIKE ? ORDER BY word ASC";
+        List<Vocabulary> list = new ArrayList<>();
+        String sql = "SELECT vocab_id, word, meaning, [example], image_data, audio_data, lesson_id, created_at " +
+                     "FROM dbo.vocabulary " +
+                     "WHERE word LIKE ? OR meaning LIKE ? " +
+                     "ORDER BY word ASC";
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
-
-            ps.setString(1, "%" + keyword + "%");
-            ps.setString(2, "%" + keyword + "%");
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            String kw = "%" + (keyword == null ? "" : keyword) + "%";
+            ps.setString(1, kw);
+            ps.setString(2, kw);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    vocabList.add(extractVocabularyFromResultSet(rs));
-                }
+                while (rs.next()) list.add(extractVocabularyFromResultSet(rs));
             }
         } catch (SQLException | NamingException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi tìm kiếm từ vựng với từ khóa: " + keyword, e);
+            LOGGER.log(Level.SEVERE, "Lỗi khi tìm kiếm vocab với từ khóa: " + keyword, e);
         }
-        return vocabList;
+        return list;
     }
 
-    // Đếm tổng số từ vựng
     public int countTotalVocabulary() {
-        String query = "SELECT COUNT(*) FROM vocabulary";
+        String sql = "SELECT COUNT(*) FROM dbo.vocabulary";
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query);
+             PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
+            return rs.next() ? rs.getInt(1) : 0;
         } catch (SQLException | NamingException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi đếm tổng số từ vựng", e);
+            LOGGER.log(Level.SEVERE, "Lỗi khi đếm tổng số vocab", e);
+            return 0;
         }
-        return 0;
     }
 
-    /**
-     * Lấy danh sách từ vựng để phân trang cho trang quản trị (tải đầy đủ dữ liệu).
-     * @param pageNumber Số trang hiện tại.
-     * @param pageSize Số lượng từ vựng trên mỗi trang.
-     * @return Danh sách từ vựng của trang đó.
-     */
+    /* =========================
+       Phân trang
+       ========================= */
     public List<Vocabulary> getVocabularyByPage(int pageNumber, int pageSize) {
-        List<Vocabulary> vocabList = new ArrayList<>();
-        String query = "SELECT * FROM vocabulary ORDER BY word ASC LIMIT ? OFFSET ?";
+        List<Vocabulary> list = new ArrayList<>();
+        String sql = "SELECT vocab_id, word, meaning, [example], image_data, audio_data, lesson_id, created_at " +
+                     "FROM dbo.vocabulary " +
+                     "ORDER BY word ASC " +
+                     "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        int offset = Math.max(0, (pageNumber - 1) * pageSize);
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
-
-            int offset = (pageNumber - 1) * pageSize;
-            ps.setInt(1, pageSize);
-            ps.setInt(2, offset);
-
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, offset);
+            ps.setInt(2, pageSize);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    vocabList.add(extractVocabularyFromResultSet(rs));
-                }
+                while (rs.next()) list.add(extractVocabularyFromResultSet(rs));
             }
         } catch (SQLException | NamingException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi lấy danh sách từ vựng theo trang", e);
+            LOGGER.log(Level.SEVERE, "Lỗi khi lấy vocab theo trang", e);
         }
-        return vocabList;
+        return list;
     }
 
-    /**
-     * Lấy danh sách từ vựng để phân trang cho trang người dùng (chỉ tải cờ media).
-     * @param pageNumber Số trang hiện tại.
-     * @param pageSize Số lượng từ vựng trên mỗi trang.
-     * @return Danh sách từ vựng đã tối ưu của trang đó.
-     */
     public List<Vocabulary> getVocabularyByPageForFlashcards(int pageNumber, int pageSize) {
-        List<Vocabulary> vocabList = new ArrayList<>();
-        String query = "SELECT vocab_id, word, meaning, example, lesson_id, created_at, " +
-                       "(image_data IS NOT NULL AND LENGTH(image_data) > 0) AS has_image, " +
-                       "(audio_data IS NOT NULL AND LENGTH(audio_data) > 0) AS has_audio " +
-                       "FROM vocabulary ORDER BY word ASC LIMIT ? OFFSET ?";
+        List<Vocabulary> list = new ArrayList<>();
+        String sql =
+            "SELECT vocab_id, word, meaning, [example], lesson_id, created_at, " +
+            "       CAST(CASE WHEN image_data IS NOT NULL AND DATALENGTH(image_data) > 0 THEN 1 ELSE 0 END AS BIT) AS has_image, " +
+            "       CAST(CASE WHEN audio_data IS NOT NULL AND DATALENGTH(audio_data) > 0 THEN 1 ELSE 0 END AS BIT) AS has_audio " +
+            "FROM dbo.vocabulary " +
+            "ORDER BY word ASC " +
+            "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        int offset = Math.max(0, (pageNumber - 1) * pageSize);
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
-
-            int offset = (pageNumber - 1) * pageSize;
-            ps.setInt(1, pageSize);
-            ps.setInt(2, offset);
-
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, offset);
+            ps.setInt(2, pageSize);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    vocabList.add(extractVocabularyForFlashcardView(rs));
-                }
+                while (rs.next()) list.add(extractVocabularyForFlashcardView(rs));
             }
         } catch (SQLException | NamingException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi lấy danh sách từ vựng tối ưu theo trang", e);
+            LOGGER.log(Level.SEVERE, "Lỗi khi lấy vocab (flashcards) theo trang", e);
         }
-        return vocabList;
+        return list;
     }
 
-    // Lấy dữ liệu tăng trưởng từ vựng hàng tháng
+    /* =========================
+       Thống kê
+       ========================= */
     public Map<String, Integer> getMonthlyVocabularyGrowth(int lastMonths) {
-        Map<String, Integer> monthlyGrowth = new LinkedHashMap<>();
-        String query = "SELECT YEAR(created_at) AS year, MONTH(created_at) AS month, COUNT(vocab_id) AS count " +
-                       "FROM vocabulary " +
-                       "WHERE created_at >= CURDATE() - INTERVAL ? MONTH " +
-                       "GROUP BY YEAR(created_at), MONTH(created_at) ORDER BY year, month;";
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
+        Map<String, Integer> monthly = new LinkedHashMap<>();
+        String sql =
+            "SELECT YEAR(created_at) AS [year], MONTH(created_at) AS [month], COUNT(vocab_id) AS [count] " +
+            "FROM dbo.vocabulary " +
+            "WHERE created_at >= DATEADD(MONTH, -?, CAST(GETDATE() AS DATE)) " +
+            "GROUP BY YEAR(created_at), MONTH(created_at) " +
+            "ORDER BY [year], [month]";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, lastMonths);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    String monthKey = "Tháng " + rs.getInt("month") + "/" + rs.getInt("year");
-                    monthlyGrowth.put(monthKey, rs.getInt("count"));
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi lấy dữ liệu tăng trưởng từ vựng", e);
-        }
-        return monthlyGrowth;
-    }
-
-    /**
-     * Lấy TOÀN BỘ danh sách từ vựng cho game nối từ. KHÔNG DÙNG LIMIT trong query.
-     * Nếu lessonId > 0, lấy từ vựng thuộc bài học đó.
-     * Nếu lessonId = 0, lấy từ vựng không thuộc bài học nào (lesson_id IS NULL).
-     * Nếu lessonId = null, lấy từ vựng ngẫu nhiên từ TẤT CẢ các từ.
-     * @param lessonId ID của bài học, hoặc 0 cho từ vựng không thuộc bài học, hoặc null cho từ vựng ngẫu nhiên bất kỳ.
-     * @return Danh sách từ vựng phù hợp.
-     */
-    public List<Vocabulary> getAllVocabularyForMatchingGame(Integer lessonId) {
-        List<Vocabulary> vocabList = new ArrayList<>();
-        String query;
-        PreparedStatement ps = null;
-        Connection conn = null;
-
-        try {
-            conn = DBContext.getConnection();
-            if (lessonId != null && lessonId > 0) {
-                // Lấy từ vựng theo ID bài học
-                query = "SELECT vocab_id, word, meaning, image_data, audio_data, lesson_id FROM vocabulary WHERE lesson_id = ? AND meaning IS NOT NULL AND meaning != ''";
-                ps = conn.prepareStatement(query);
-                ps.setInt(1, lessonId);
-            } else if (lessonId != null && lessonId == 0) {
-                // Lấy từ vựng không thuộc bài học nào (lesson_id IS NULL)
-                query = "SELECT vocab_id, word, meaning, image_data, audio_data, lesson_id FROM vocabulary WHERE lesson_id IS NULL AND meaning IS NOT NULL AND meaning != ''";
-                ps = conn.prepareStatement(query);
-            } else { // lessonId == null
-                // Lấy từ vựng ngẫu nhiên từ TẤT CẢ các từ (bao gồm cả có lesson_id và IS NULL)
-                query = "SELECT vocab_id, word, meaning, image_data, audio_data, lesson_id FROM vocabulary WHERE meaning IS NOT NULL AND meaning != ''";
-                ps = conn.prepareStatement(query);
-            }
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Vocabulary vocab = new Vocabulary();
-                    vocab.setVocabId(rs.getInt("vocab_id"));
-                    vocab.setWord(rs.getString("word"));
-                    vocab.setMeaning(rs.getString("meaning"));
-                    // Có thể tải image_data/audio_data nếu cần cho các biến thể game
-                    vocab.setImageData(rs.getBytes("image_data"));
-                    vocab.setAudioData(rs.getBytes("audio_data"));
-                    // Đảm bảo lessonId được đọc đúng, có thể là null
-                    int currentLessonId = rs.getInt("lesson_id");
-                    if (!rs.wasNull()) {
-                        vocab.setLessonId(currentLessonId);
-                    } else {
-                        vocab.setLessonId(null);
-                    }
-                    vocabList.add(vocab);
+                    String key = "Tháng " + rs.getInt("month") + "/" + rs.getInt("year");
+                    monthly.put(key, rs.getInt("count"));
                 }
             }
         } catch (SQLException | NamingException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi lấy TOÀN BỘ từ vựng cho game nối từ. Lesson ID: " + lessonId, e);
-        } finally {
-            // Đóng PreparedStatement và Connection trong khối finally để đảm bảo tài nguyên được giải phóng
-            try {
-                if (ps != null) ps.close();
-                if (conn != null) conn.close();
-            } catch (SQLException e) {
-                LOGGER.log(Level.SEVERE, "Lỗi đóng kết nối: " + e.getMessage(), e);
-            }
+            LOGGER.log(Level.SEVERE, "Lỗi khi lấy tăng trưởng vocab hàng tháng", e);
         }
-        return vocabList;
+        return monthly;
+    }
+
+    /* =========================
+       Game nối từ (có thể kèm BLOB)
+       ========================= */
+    public List<Vocabulary> getAllVocabularyForMatchingGame(Integer lessonId) {
+        List<Vocabulary> list = new ArrayList<>();
+        String sql;
+        try (Connection conn = DBContext.getConnection()) {
+            if (lessonId != null && lessonId > 0) {
+                sql = "SELECT vocab_id, word, meaning, image_data, audio_data, lesson_id " +
+                      "FROM dbo.vocabulary " +
+                      "WHERE lesson_id = ? AND meaning IS NOT NULL AND LTRIM(RTRIM(meaning)) <> ''";
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setInt(1, lessonId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) list.add(mapForGame(rs));
+                    }
+                }
+            } else if (lessonId != null && lessonId == 0) {
+                sql = "SELECT vocab_id, word, meaning, image_data, audio_data, lesson_id " +
+                      "FROM dbo.vocabulary " +
+                      "WHERE lesson_id IS NULL AND meaning IS NOT NULL AND LTRIM(RTRIM(meaning)) <> ''";
+                try (PreparedStatement ps = conn.prepareStatement(sql);
+                     ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) list.add(mapForGame(rs));
+                }
+            } else {
+                sql = "SELECT vocab_id, word, meaning, image_data, audio_data, lesson_id " +
+                      "FROM dbo.vocabulary " +
+                      "WHERE meaning IS NOT NULL AND LTRIM(RTRIM(meaning)) <> ''";
+                try (PreparedStatement ps = conn.prepareStatement(sql);
+                     ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) list.add(mapForGame(rs));
+                }
+            }
+        } catch (SQLException | NamingException e) {
+            LOGGER.log(Level.SEVERE, "Lỗi khi lấy vocab cho game nối từ. lessonId=" + lessonId, e);
+        }
+        return list;
+    }
+
+    private Vocabulary mapForGame(ResultSet rs) throws SQLException {
+        Vocabulary v = new Vocabulary();
+        v.setVocabId(rs.getInt("vocab_id"));
+        v.setWord(rs.getString("word"));
+        v.setMeaning(rs.getString("meaning"));
+        v.setImageData(rs.getBytes("image_data"));
+        v.setAudioData(rs.getBytes("audio_data"));
+        int l = rs.getInt("lesson_id");
+        if (!rs.wasNull()) v.setLessonId(l); else v.setLessonId(null);
+        return v;
     }
 }
