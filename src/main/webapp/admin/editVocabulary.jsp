@@ -55,10 +55,10 @@
                                     <div class="form-group">
                                         <label><i class="fas fa-image"></i> Ảnh minh họa hiện tại</label>
                                         <div>
-                                            <c:if test="${not empty vocabToEdit.imageData and vocabToEdit.imageData.length > 0}">
-                                                <img src="${pageContext.request.contextPath}/media?id=${vocabToEdit.vocabId}&type=image" alt="Ảnh minh họa" style="max-width: 200px; border-radius: 8px;">
+                                            <c:if test="${not empty vocabToEdit.imageUrl}">
+                                                <img src="${vocabToEdit.imageUrl}" alt="Ảnh minh họa" style="max-width: 200px; border-radius: 8px;">
                                             </c:if>
-                                            <c:if test="${empty vocabToEdit.imageData or vocabToEdit.imageData.length == 0}">
+                                            <c:if test="${empty vocabToEdit.imageUrl}">
                                                 <p class="text-muted">Chưa có ảnh.</p>
                                             </c:if>
                                         </div>
@@ -72,10 +72,10 @@
                                     <div class="form-group">
                                         <label><i class="fas fa-volume-up"></i> File phát âm hiện tại</label>
                                         <div>
-                                            <c:if test="${not empty vocabToEdit.audioData and vocabToEdit.audioData.length > 0}">
-                                                <audio controls src="${pageContext.request.contextPath}/media?id=${vocabToEdit.vocabId}&type=audio"></audio>
+                                            <c:if test="${not empty vocabToEdit.audioUrl}">
+                                                <audio controls src="${vocabToEdit.audioUrl}"></audio>
                                             </c:if>
-                                            <c:if test="${empty vocabToEdit.audioData or vocabToEdit.audioData.length == 0}">
+                                            <c:if test="${empty vocabToEdit.audioUrl}">
                                                 <p class="text-muted">Chưa có audio.</p>
                                             </c:if>
                                         </div>

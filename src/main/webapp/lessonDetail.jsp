@@ -604,8 +604,7 @@
 
                                             <c:if test="${vocab.hasAudio}">
                                                 <div class="ml-3">
-                                                    <%-- Trỏ src đến MediaServlet để lấy dữ liệu BLOB --%>
-                                                    <audio controls class="audio-player" src="${pageContext.request.contextPath}/media?id=${vocab.vocabId}&type=audio"></audio>
+                                                    <audio controls class="audio-player" src="${vocab.audioUrl}"></audio>
                                                 </div>
                                             </c:if>
                                         </div>
@@ -617,9 +616,9 @@
                                         </c:if>
 
                                         <c:if test="${vocab.hasImage}">
-                                            <img src="${pageContext.request.contextPath}/media?id=${vocab.vocabId}&type=image" 
-                                                 alt="<c:out value='${vocab.word}'/>" 
-                                                 class="vocab-image img-thumbnail mt-2" 
+                                            <img src="${vocab.imageUrl}"
+                                                 alt="<c:out value='${vocab.word}'/>"
+                                                 class="vocab-image img-thumbnail mt-2"
                                                  style="max-height: 120px;">
                                         </c:if>
                                     </div>

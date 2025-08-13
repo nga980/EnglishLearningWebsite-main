@@ -8,8 +8,8 @@ public class Vocabulary implements Serializable {
     private String meaning;
     private String example;
 
-    private transient byte[] imageData;
-    private transient byte[] audioData;
+    private String imageUrl;
+    private String audioUrl;
 
     private Integer lessonId;
     private java.sql.Timestamp createdAt;
@@ -26,8 +26,8 @@ public class Vocabulary implements Serializable {
     public String getWord() { return word; }
     public String getMeaning() { return meaning; }
     public String getExample() { return example; }
-    public byte[] getImageData() { return imageData; }
-    public byte[] getAudioData() { return audioData; }
+    public String getImageUrl() { return imageUrl; }
+    public String getAudioUrl() { return audioUrl; }
     public Integer getLessonId() { return lessonId; }
     public java.sql.Timestamp getCreatedAt() { return createdAt; }
 
@@ -40,8 +40,8 @@ public class Vocabulary implements Serializable {
     public void setWord(String word) { this.word = word; }
     public void setMeaning(String meaning) { this.meaning = meaning; }
     public void setExample(String example) { this.example = example; }
-    public void setImageData(byte[] imageData) { this.imageData = imageData; }
-    public void setAudioData(byte[] audioData) { this.audioData = audioData; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public void setAudioUrl(String audioUrl) { this.audioUrl = audioUrl; }
     public void setLessonId(Integer lessonId) { this.lessonId = lessonId; }
     public void setCreatedAt(java.sql.Timestamp createdAt) { this.createdAt = createdAt; }
 
