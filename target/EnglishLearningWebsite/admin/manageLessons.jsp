@@ -440,16 +440,6 @@
                         <div class="stat-number">${totalLessons}</div>
                         <div class="stat-label">Tổng Số Bài Học</div>
                     </div>
-                    <div class="stat-card">
-                        <%-- Hiển thị trang hiện tại / tổng số trang --%>
-                        <div class="stat-number">${currentPage} / ${totalPages > 0 ? totalPages : 1}</div>
-                        <div class="stat-label">Trang Hiện Tại</div>
-                    </div>
-                    <div class="stat-card">
-                        <%-- Hiển thị số bài học trên trang này --%>
-                        <div class="stat-number">${lessonList.size()}</div>
-                        <div class="stat-label">Bài Học Đang Hiển Thị</div>
-                    </div>
                 </div>
                 <div class="search-filter">
                     <div class="row filter-row">

@@ -475,20 +475,6 @@
                     <div class="stat-label">Tổng Số Chủ Đề</div>
                 </div>
             </div>
-            <div class="stat-card current-page">
-                <i class="fas fa-file-alt stat-icon"></i>
-                <div class="stat-info">
-                    <div class="stat-number">${currentPage} / ${totalPages > 0 ? totalPages : 1}</div>
-                    <div class="stat-label">Trang Hiện Tại</div>
-                </div>
-            </div>
-            <div class="stat-card displaying-count">
-                <i class="fas fa-eye stat-icon"></i>
-                <div class="stat-info">
-                    <div class="stat-number">${grammarTopicList.size()}</div>
-                    <div class="stat-label">Chủ Đề Đang Hiển Thị</div>
-                </div>
-            </div>
         </div>
 
         <!-- Search & Filter -->

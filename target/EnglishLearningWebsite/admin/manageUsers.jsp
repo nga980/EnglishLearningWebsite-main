@@ -376,10 +376,6 @@
                     <div class="content-card mt-4">
                         <div class="row text-center">
                             <div class="col-md-3">
-                                <h4 class="text-primary">${userList.size()}</h4>
-                                <small class="text-muted">Người dùng trên trang</small>
-                            </div>
-                            <div class="col-md-3">
                                 <h4 class="text-info">
                                     <c:set var="adminCount" value="0"/>
                                     <c:forEach var="user" items="${userList}">
@@ -402,10 +398,6 @@
                                     ${userCount}
                                 </h4>
                                 <small class="text-muted">Người dùng thường</small>
-                            </div>
-                            <div class="col-md-3">
-                                <h4 class="text-warning">${currentPage}/${totalPages}</h4>
-                                <small class="text-muted">Trang hiện tại</small>
                             </div>
                         </div>
                     </div>
