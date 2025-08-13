@@ -21,9 +21,8 @@ public class VocabularyDAO {
         vocab.setWord(rs.getString("word"));
         vocab.setMeaning(rs.getString("meaning"));
         vocab.setExample(rs.getString("example"));
-        // Chú ý: chỉ select image_data/audio_data ở các API cần thiết để tránh tải BLOB không cần
-        try { vocab.setImageData(rs.getBytes("image_data")); } catch (SQLException ignore) {}
-        try { vocab.setAudioData(rs.getBytes("audio_data")); } catch (SQLException ignore) {}
+        vocab.setImageUrl(rs.getString("image_url"));
+        vocab.setAudioUrl(rs.getString("audio_url"));
 
         int lessonId = rs.getInt("lesson_id");
         if (!rs.wasNull()) vocab.setLessonId(lessonId); else vocab.setLessonId(null);
@@ -37,6 +36,8 @@ public class VocabularyDAO {
         vocab.setWord(rs.getString("word"));
         vocab.setMeaning(rs.getString("meaning"));
         vocab.setExample(rs.getString("example"));
+        vocab.setImageUrl(rs.getString("image_url"));
+        vocab.setAudioUrl(rs.getString("audio_url"));
         vocab.setHasImage(rs.getBoolean("has_image"));
         vocab.setHasAudio(rs.getBoolean("has_audio"));
         int lessonId = rs.getInt("lesson_id");
@@ -51,9 +52,9 @@ public class VocabularyDAO {
     public List<Vocabulary> getVocabularyByLessonIdForFlashcards(int lessonId) {
         List<Vocabulary> list = new ArrayList<>();
         String sql =
-            "SELECT vocab_id, word, meaning, [example], lesson_id, created_at, " +
-            "       CAST(CASE WHEN image_data IS NOT NULL AND DATALENGTH(image_data) > 0 THEN 1 ELSE 0 END AS BIT) AS has_image, " +
-            "       CAST(CASE WHEN audio_data IS NOT NULL AND DATALENGTH(audio_data) > 0 THEN 1 ELSE 0 END AS BIT) AS has_audio " +
+            "SELECT vocab_id, word, meaning, [example], lesson_id, created_at, image_url, audio_url, " +
+            "       CAST(CASE WHEN image_url IS NOT NULL AND LTRIM(RTRIM(image_url)) <> '' THEN 1 ELSE 0 END AS BIT) AS has_image, " +
+            "       CAST(CASE WHEN audio_url IS NOT NULL AND LTRIM(RTRIM(audio_url)) <> '' THEN 1 ELSE 0 END AS BIT) AS has_audio " +
             "FROM dbo.vocabulary WHERE lesson_id = ? ORDER BY word ASC";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -70,9 +71,9 @@ public class VocabularyDAO {
     public List<Vocabulary> getAllVocabularyForFlashcards() {
         List<Vocabulary> list = new ArrayList<>();
         String sql =
-            "SELECT vocab_id, word, meaning, [example], lesson_id, created_at, " +
-            "       CAST(CASE WHEN image_data IS NOT NULL AND DATALENGTH(image_data) > 0 THEN 1 ELSE 0 END AS BIT) AS has_image, " +
-            "       CAST(CASE WHEN audio_data IS NOT NULL AND DATALENGTH(audio_data) > 0 THEN 1 ELSE 0 END AS BIT) AS has_audio " +
+            "SELECT vocab_id, word, meaning, [example], lesson_id, created_at, image_url, audio_url, " +
+            "       CAST(CASE WHEN image_url IS NOT NULL AND LTRIM(RTRIM(image_url)) <> '' THEN 1 ELSE 0 END AS BIT) AS has_image, " +
+            "       CAST(CASE WHEN audio_url IS NOT NULL AND LTRIM(RTRIM(audio_url)) <> '' THEN 1 ELSE 0 END AS BIT) AS has_audio " +
             "FROM dbo.vocabulary ORDER BY word ASC";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -89,7 +90,7 @@ public class VocabularyDAO {
        ========================= */
     public List<Vocabulary> getVocabularyByLessonId(int lessonId) {
         List<Vocabulary> list = new ArrayList<>();
-        String sql = "SELECT vocab_id, word, meaning, [example], image_data, audio_data, lesson_id, created_at " +
+        String sql = "SELECT vocab_id, word, meaning, [example], image_url, audio_url, lesson_id, created_at " +
                      "FROM dbo.vocabulary WHERE lesson_id = ? ORDER BY word ASC";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -104,7 +105,7 @@ public class VocabularyDAO {
     }
 
     public Vocabulary getVocabularyById(int vocabId) {
-        String sql = "SELECT vocab_id, word, meaning, [example], image_data, audio_data, lesson_id, created_at " +
+        String sql = "SELECT vocab_id, word, meaning, [example], image_url, audio_url, lesson_id, created_at " +
                      "FROM dbo.vocabulary WHERE vocab_id = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -120,15 +121,15 @@ public class VocabularyDAO {
 
     public boolean addVocabulary(Vocabulary vocab) {
         // created_at để DB tự set DEFAULT -> không truyền
-        String sql = "INSERT INTO dbo.vocabulary (word, meaning, [example], image_data, audio_data, lesson_id) " +
+        String sql = "INSERT INTO dbo.vocabulary (word, meaning, [example], image_url, audio_url, lesson_id) " +
                      "VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, vocab.getWord());
             ps.setString(2, vocab.getMeaning());
             ps.setString(3, vocab.getExample());
-            ps.setBytes(4, vocab.getImageData());
-            ps.setBytes(5, vocab.getAudioData());
+            ps.setString(4, vocab.getImageUrl());
+            ps.setString(5, vocab.getAudioUrl());
             if (vocab.getLessonId() != null) ps.setInt(6, vocab.getLessonId()); else ps.setNull(6, Types.INTEGER);
             return ps.executeUpdate() > 0;
         } catch (SQLException | NamingException e) {
@@ -138,15 +139,15 @@ public class VocabularyDAO {
     }
 
     public boolean updateVocabulary(Vocabulary vocab) {
-        String sql = "UPDATE dbo.vocabulary SET word = ?, meaning = ?, [example] = ?, image_data = ?, audio_data = ?, lesson_id = ? " +
+        String sql = "UPDATE dbo.vocabulary SET word = ?, meaning = ?, [example] = ?, image_url = ?, audio_url = ?, lesson_id = ? " +
                      "WHERE vocab_id = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, vocab.getWord());
             ps.setString(2, vocab.getMeaning());
             ps.setString(3, vocab.getExample());
-            ps.setBytes(4, vocab.getImageData());
-            ps.setBytes(5, vocab.getAudioData());
+            ps.setString(4, vocab.getImageUrl());
+            ps.setString(5, vocab.getAudioUrl());
             if (vocab.getLessonId() != null) ps.setInt(6, vocab.getLessonId()); else ps.setNull(6, Types.INTEGER);
             ps.setInt(7, vocab.getVocabId());
             return ps.executeUpdate() > 0;
@@ -170,7 +171,7 @@ public class VocabularyDAO {
 
     public List<Vocabulary> searchVocabulary(String keyword) {
         List<Vocabulary> list = new ArrayList<>();
-        String sql = "SELECT vocab_id, word, meaning, [example], image_data, audio_data, lesson_id, created_at " +
+        String sql = "SELECT vocab_id, word, meaning, [example], image_url, audio_url, lesson_id, created_at " +
                      "FROM dbo.vocabulary " +
                      "WHERE word LIKE ? OR meaning LIKE ? " +
                      "ORDER BY word ASC";
@@ -205,7 +206,7 @@ public class VocabularyDAO {
        ========================= */
     public List<Vocabulary> getVocabularyByPage(int pageNumber, int pageSize) {
         List<Vocabulary> list = new ArrayList<>();
-        String sql = "SELECT vocab_id, word, meaning, [example], image_data, audio_data, lesson_id, created_at " +
+        String sql = "SELECT vocab_id, word, meaning, [example], image_url, audio_url, lesson_id, created_at " +
                      "FROM dbo.vocabulary " +
                      "ORDER BY word ASC " +
                      "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
@@ -226,9 +227,9 @@ public class VocabularyDAO {
     public List<Vocabulary> getVocabularyByPageForFlashcards(int pageNumber, int pageSize) {
         List<Vocabulary> list = new ArrayList<>();
         String sql =
-            "SELECT vocab_id, word, meaning, [example], lesson_id, created_at, " +
-            "       CAST(CASE WHEN image_data IS NOT NULL AND DATALENGTH(image_data) > 0 THEN 1 ELSE 0 END AS BIT) AS has_image, " +
-            "       CAST(CASE WHEN audio_data IS NOT NULL AND DATALENGTH(audio_data) > 0 THEN 1 ELSE 0 END AS BIT) AS has_audio " +
+            "SELECT vocab_id, word, meaning, [example], lesson_id, created_at, image_url, audio_url, " +
+            "       CAST(CASE WHEN image_url IS NOT NULL AND LTRIM(RTRIM(image_url)) <> '' THEN 1 ELSE 0 END AS BIT) AS has_image, " +
+            "       CAST(CASE WHEN audio_url IS NOT NULL AND LTRIM(RTRIM(audio_url)) <> '' THEN 1 ELSE 0 END AS BIT) AS has_audio " +
             "FROM dbo.vocabulary " +
             "ORDER BY word ASC " +
             "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
@@ -280,7 +281,7 @@ public class VocabularyDAO {
         String sql;
         try (Connection conn = DBContext.getConnection()) {
             if (lessonId != null && lessonId > 0) {
-                sql = "SELECT vocab_id, word, meaning, image_data, audio_data, lesson_id " +
+                sql = "SELECT vocab_id, word, meaning, image_url, audio_url, lesson_id " +
                       "FROM dbo.vocabulary " +
                       "WHERE lesson_id = ? AND meaning IS NOT NULL AND LTRIM(RTRIM(meaning)) <> ''";
                 try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -290,7 +291,7 @@ public class VocabularyDAO {
                     }
                 }
             } else if (lessonId != null && lessonId == 0) {
-                sql = "SELECT vocab_id, word, meaning, image_data, audio_data, lesson_id " +
+                sql = "SELECT vocab_id, word, meaning, image_url, audio_url, lesson_id " +
                       "FROM dbo.vocabulary " +
                       "WHERE lesson_id IS NULL AND meaning IS NOT NULL AND LTRIM(RTRIM(meaning)) <> ''";
                 try (PreparedStatement ps = conn.prepareStatement(sql);
@@ -298,7 +299,7 @@ public class VocabularyDAO {
                     while (rs.next()) list.add(mapForGame(rs));
                 }
             } else {
-                sql = "SELECT vocab_id, word, meaning, image_data, audio_data, lesson_id " +
+                sql = "SELECT vocab_id, word, meaning, image_url, audio_url, lesson_id " +
                       "FROM dbo.vocabulary " +
                       "WHERE meaning IS NOT NULL AND LTRIM(RTRIM(meaning)) <> ''";
                 try (PreparedStatement ps = conn.prepareStatement(sql);
@@ -317,8 +318,8 @@ public class VocabularyDAO {
         v.setVocabId(rs.getInt("vocab_id"));
         v.setWord(rs.getString("word"));
         v.setMeaning(rs.getString("meaning"));
-        v.setImageData(rs.getBytes("image_data"));
-        v.setAudioData(rs.getBytes("audio_data"));
+        v.setImageUrl(rs.getString("image_url"));
+        v.setAudioUrl(rs.getString("audio_url"));
         int l = rs.getInt("lesson_id");
         if (!rs.wasNull()) v.setLessonId(l); else v.setLessonId(null);
         return v;
