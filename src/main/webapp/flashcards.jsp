@@ -156,9 +156,10 @@
 
                     // Thêm hình ảnh nếu có
                     if (vocab.hasImage) {
+                        const imageUrl = contextPath + '/media?id=' + vocab.vocabId + '&type=image';
                         const imgEl = document.createElement('img');
                         imgEl.className = 'flashcard-img';
-                        imgEl.src = vocab.imageUrl;
+                        imgEl.src = imageUrl;
                         imgEl.alt = 'Image for ' + word;
                         cardBack.appendChild(imgEl);
                     }
@@ -172,10 +173,12 @@
 
                     // Thêm audio nếu có
                     if (vocab.hasAudio) {
+                        // Đảm bảo truy cập chính xác "vocab.vocabId"
+                        const audioUrl = contextPath + '/media?id=' + vocab.vocabId + '&type=audio';
                         const audioEl = document.createElement('audio');
                         audioEl.className = 'audio-player';
                         audioEl.controls = true;
-                        audioEl.src = vocab.audioUrl;
+                        audioEl.src = audioUrl;
                         cardBack.appendChild(audioEl);
                     }
 

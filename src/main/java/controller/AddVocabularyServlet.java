@@ -3,7 +3,7 @@ package controller;
 import dao.VocabularyDAO;
 import model.Vocabulary;
 import java.io.IOException;
-import util.S3ClientUtil;
+import java.io.InputStream;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -14,8 +14,8 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
 
 /**
- * Servlet xử lý việc thêm từ vựng mới, bao gồm upload file ảnh và audio lên S3
- * và lưu URL tương ứng vào cơ sở dữ liệu.
+ * Servlet xử lý việc thêm từ vựng mới, bao gồm cả việc upload file ảnh và audio
+ * trực tiếp vào cơ sở dữ liệu dưới dạng BLOB.
  */
 @WebServlet(name = "AddVocabularyServlet", urlPatterns = {"/admin/add-vocabulary-action"})
 @MultipartConfig // Bắt buộc phải có để xử lý form có file upload
@@ -47,26 +47,19 @@ public class AddVocabularyServlet extends HttpServlet {
             return;
         }
         
-        Part imagePart = request.getPart("imageFile");
-        Part audioPart = request.getPart("audioFile");
-
-        String imageUrl = null;
-        if (imagePart != null && imagePart.getSize() > 0) {
-            imageUrl = S3ClientUtil.upload(imagePart.getInputStream(), imagePart.getSubmittedFileName(), imagePart.getSize());
-        }
-
-        String audioUrl = null;
-        if (audioPart != null && audioPart.getSize() > 0) {
-            audioUrl = S3ClientUtil.upload(audioPart.getInputStream(), audioPart.getSubmittedFileName(), audioPart.getSize());
-        }
+        // Đọc dữ liệu của file được upload thành mảng byte[]
+        byte[] imageData = getBytesFromPart(request.getPart("imageFile"));
+        byte[] audioData = getBytesFromPart(request.getPart("audioFile"));
 
         // Tạo đối tượng Vocabulary mới
         Vocabulary newVocab = new Vocabulary();
         newVocab.setWord(word);
         newVocab.setMeaning(meaning);
         newVocab.setExample(example);
-        newVocab.setImageUrl(imageUrl);
-        newVocab.setAudioUrl(audioUrl);
+        
+        // Gán dữ liệu nhị phân vào đối tượng
+        newVocab.setImageData(imageData);
+        newVocab.setAudioData(audioData);
 
         // Xử lý lessonId (có thể null)
         if (lessonIdStr != null && !lessonIdStr.trim().isEmpty()) {
@@ -91,5 +84,19 @@ public class AddVocabularyServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/admin/manage-vocabulary");
     }
     
-    // Không cần phương thức trợ giúp đọc toàn bộ file vào bộ nhớ
+    /**
+     * Hàm trợ giúp để đọc dữ liệu từ một Part (file upload) và chuyển thành mảng byte.
+     * @param part Đối tượng Part chứa dữ liệu file.
+     * @return Mảng byte của file, hoặc null nếu không có file hoặc file rỗng.
+     * @throws IOException
+     */
+    private byte[] getBytesFromPart(Part part) throws IOException {
+        if (part == null || part.getSize() == 0) {
+            return null;
+        }
+        try (InputStream inputStream = part.getInputStream()) {
+            // inputStream.readAllBytes() là cách hiện đại để đọc toàn bộ stream
+            return inputStream.readAllBytes();
+        }
+    }
 }
