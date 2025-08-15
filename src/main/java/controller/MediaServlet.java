@@ -9,10 +9,11 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.OutputStream;
 
 /**
- * Servlet này xử lý việc lấy URL media (ảnh, audio) cho các flashcard.
- * Nó lắng nghe tại URL /media và chuyển hướng tới URL đã lưu trong cơ sở dữ liệu.
+ * Servlet này xử lý việc trả về dữ liệu media (ảnh, audio) cho các flashcard.
+ * Nó lắng nghe tại URL /media và trả về dữ liệu byte dựa trên vocabId và type.
  */
 @WebServlet(name = "MediaServlet", urlPatterns = {"/media"})
 public class MediaServlet extends HttpServlet {
@@ -45,17 +46,30 @@ public class MediaServlet extends HttpServlet {
                 return;
             }
 
-            String mediaUrl = null;
+            byte[] mediaData = null;
+            String contentType = null;
+
             if ("image".equalsIgnoreCase(type)) {
-                mediaUrl = vocab.getImageUrl();
+                mediaData = vocab.getImageData(); // Cần có getter getImageData() trong model
+                // Giả sử bạn lưu ảnh PNG hoặc JPEG. Thay đổi cho phù hợp.
+                contentType = getServletContext().getMimeType("image.jpg"); // "image/jpeg"
             } else if ("audio".equalsIgnoreCase(type)) {
-                mediaUrl = vocab.getAudioUrl();
+                mediaData = vocab.getAudioData(); // Cần có getter getAudioData() trong model
+                // Giả sử bạn lưu audio MP3. Thay đổi cho phù hợp.
+                contentType = getServletContext().getMimeType("audio.mp3"); // "audio/mpeg"
             }
 
-            if (mediaUrl != null && !mediaUrl.trim().isEmpty()) {
-                response.sendRedirect(mediaUrl);
+            if (mediaData != null && mediaData.length > 0) {
+                response.setContentType(contentType);
+                response.setContentLength(mediaData.length);
+                
+                // Ghi dữ liệu vào response
+                try (OutputStream out = response.getOutputStream()) {
+                    out.write(mediaData);
+                }
             } else {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Media URL not found for this vocabulary.");
+                // Không có dữ liệu media tương ứng
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Media data not found for this vocabulary.");
             }
 
         } catch (NumberFormatException e) {

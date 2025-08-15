@@ -3,7 +3,7 @@ package controller;
 import dao.VocabularyDAO;
 import model.Vocabulary;
 import java.io.IOException;
-import util.S3ClientUtil;
+import java.io.InputStream;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -65,18 +65,18 @@ public class UpdateVocabularyServlet extends HttpServlet {
 
         // === LOGIC SỬA LỖI QUAN TRỌNG ===
         // Chỉ cập nhật dữ liệu media nếu có file mới được tải lên và file đó có nội dung.
-
-        Part imagePart = request.getPart("imageFile");
-        if (imagePart != null && imagePart.getSize() > 0) {
-            String imageUrl = S3ClientUtil.upload(imagePart.getInputStream(), imagePart.getSubmittedFileName(), imagePart.getSize());
-            vocabToUpdate.setImageUrl(imageUrl);
+        
+        byte[] newImageData = getBytesFromPart(request.getPart("imageFile"));
+        if (newImageData != null && newImageData.length > 0) {
+            vocabToUpdate.setImageData(newImageData);
         }
+        // Nếu không, giữ nguyên dữ liệu ảnh cũ trong vocabToUpdate
 
-        Part audioPart = request.getPart("audioFile");
-        if (audioPart != null && audioPart.getSize() > 0) {
-            String audioUrl = S3ClientUtil.upload(audioPart.getInputStream(), audioPart.getSubmittedFileName(), audioPart.getSize());
-            vocabToUpdate.setAudioUrl(audioUrl);
+        byte[] newAudioData = getBytesFromPart(request.getPart("audioFile"));
+        if (newAudioData != null && newAudioData.length > 0) {
+            vocabToUpdate.setAudioData(newAudioData);
         }
+        // Nếu không, giữ nguyên dữ liệu audio cũ
         
         if (lessonIdStr != null && !lessonIdStr.trim().isEmpty()) {
             try {
@@ -98,5 +98,12 @@ public class UpdateVocabularyServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/admin/manage-vocabulary");
     }
 
-    // Không cần phương thức đọc toàn bộ file vào bộ nhớ
+    private byte[] getBytesFromPart(Part part) throws IOException {
+        if (part == null || part.getSize() == 0) {
+            return null;
+        }
+        try (InputStream inputStream = part.getInputStream()) {
+            return inputStream.readAllBytes();
+        }
+    }
 }
